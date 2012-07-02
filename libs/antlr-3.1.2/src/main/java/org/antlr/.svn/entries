@@ -1,80 +1,0 @@
-9
-
-dir
-4769
-svn+ssh://svn.inf.ed.ac.uk/svn/epedev/ContextAdapterCodeGeneration/trunk/libs/antlr-3.1.2/src/main/java/org/antlr
-svn+ssh://svn.inf.ed.ac.uk/svn/epedev
-
-
-
-2009-03-14T14:16:50.696708Z
-4704
-smoodie
-
-
-svn:special svn:externals svn:needs-lock
-
-
-
-
-
-
-
-
-
-
-
-db7d2899-3286-43a5-ace7-49031799319a
-
-Tool.java
-file
-
-
-
-
-2010-04-27T21:45:32.000000Z
-e430d36d8f8e02a402c331e0f0a8f06f
-2009-03-14T14:16:50.696708Z
-4704
-smoodie
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-23392
-
-analysis
-dir
-
-codegen
-dir
-
-grammar
-dir
-
-gunit
-dir
-
-misc
-dir
-
-tool
-dir
-

@@ -1,98 +1,0 @@
-9
-
-dir
-4769
-svn+ssh://svn.inf.ed.ac.uk/svn/epedev/ContextAdapterCodeGeneration/trunk/libs/antlr-3.1.2/src/main/resources/org/antlr/codegen/templates
-svn+ssh://svn.inf.ed.ac.uk/svn/epedev
-
-
-
-2009-03-14T14:16:50.696708Z
-4704
-smoodie
-
-
-svn:special svn:externals svn:needs-lock
-
-
-
-
-
-
-
-
-
-
-
-db7d2899-3286-43a5-ace7-49031799319a
-
-ANTLRCore.sti
-file
-
-
-
-
-2010-04-27T21:46:45.000000Z
-277dbcad5a8182907ba5102443a7de2d
-2009-03-14T14:16:50.696708Z
-4704
-smoodie
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-13352
-
-ActionScript
-dir
-
-C
-dir
-
-CPP
-dir
-
-CSharp
-dir
-
-CSharp2
-dir
-
-Delphi
-dir
-
-Java
-dir
-
-JavaScript
-dir
-
-ObjC
-dir
-
-Perl5
-dir
-
-Python
-dir
-
-Ruby
-dir
-

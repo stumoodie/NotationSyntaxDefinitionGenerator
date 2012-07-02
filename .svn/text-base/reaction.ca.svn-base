@@ -1,0 +1,149 @@
+/**
+<verbatim>
+Reaction Notation. A notation that represents reactions used in a mathematical model of biochemical reactions. 
+*/
+context org.pathwayeditor.reaction (name = "Reaction Notation" descr="A notation to represent reactions in a mathematical model" version=1.0.0)
+
+
+property Equation (name="Equation" descr="Mathematical equation" type=simple visualisable)
+
+property Stoichiometry (name="Stoichiometry" descr="Stoichiometry coefficient" type=simple visualisable)
+
+property InitialConcn (name="IC" descr="initial concentration of the compound" type=number) = "0.0"
+
+property KineticLaw (name="KineticLaw" descr="MathML description of kinetic law and kinetic constants" type=simple)
+
+
+RMO	( contains [Reaction, Species, Compartment])
+
+
+shape 	Compartment (name="Compartment" descr="Functional compartment"
+		stype = RECTANGLE
+		size = [200,200]
+		property Volume (name="volume" type=number )= "1.0"
+		contains [*]
+	)
+	
+/**
+Reaction element.
+*/
+shape 	Reaction ( name="Reaction" descr="A biochemical reaction"
+		stype = ELLIPSE
+		size = [10,10]
+		lcolor = [0,0,0]
+		lwidth(read-only) = 2
+		fcolor = [255,255,255]
+		property Reversibility (name="Reversibility" type=simple)="irreversible"
+		property Parameters (name="Parameters" type=simple)=" "
+		VarName = "v1"
+		contains []
+	)
+
+/**
+A chemical species, which could be consumed or produced in the reaction.
+*/
+shape 	Species ( name="Species" descr="The species participating in the reaction"
+		stype = RECTANGLE
+		size = [60,40]
+		lcolor = [255,255,255]
+		fcolor = [0,0,0]
+		contains []
+		InitialConcn = "1.0"
+	)
+
+
+/**
+Conection between substrate and the reaction. Should be used to create 
+=speciesReference= in =listOfReactants= part of reaction definition.
+Target port will define the stoichiometry of that speciesReference, while source port will provide the role and link to specie id.
+*/
+link	LHSLink (name="LHS Link" descr="A link forming the left hand side of a reaction"  
+		lcolor = [0,0,0]
+		source = Species target = [Reaction]
+		Stoichiometry = "1"
+		sport = NONE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+		)
+		tport = NONE (stype = RECTANGLE
+			offset = 0
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+		)
+	)
+	
+/**
+Conection between the reaction and the product. Should be used to create 
+=speciesReference= in =listOfProducts= part of reaction definition.
+Source port will define the stoichiometry of that speciesReference, while target port will provide the role and link to specie id.
+*/
+link	RHSLink (name="RHS Link" descr="A link forming the right-hand side of a reaction" 
+		lcolor = [0,0,0]
+		source = Reaction target = [Species]
+		VarName = "v1"
+		Stoichiometry = "1"
+		sport = NONE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			offset = 2
+		)
+		tport = TRIANGLE[8,8](stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+		)
+	)
+	
+link	Activation (name="Activation Link" descr="Links a Species that increases the rate of a reaction, but whose mass is not changed by it" 
+		lcolor = [0,0,0]
+		source = Species target = [Reaction]
+		Stoichiometry = "1"
+		sport = NONE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			offset = 2
+		)
+		tport = EMPTY_CIRCLE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+		)
+	)
+
+link	Modulation (name="Modulation Link" descr="Links a Species that changes the rate of a reaction, but whose mass is not changed by it" 
+		lcolor = [0,0,0]
+		source = Species target = [Reaction]
+		Stoichiometry = "1"
+		sport = NONE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			offset = 2
+		)
+		tport = DIAMOND (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+		)
+	)
+
+link	Inhibition (name="Inhibition Link" descr="Links a Species that reduces the rate of a reaction, but whose mass is not changed by it"
+		lcolor = [0,0,0]
+		source = Species target = [Reaction]
+		Stoichiometry = "1"
+		sport = NONE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			offset = 2
+		)
+		tport = BAR (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+		)
+	)

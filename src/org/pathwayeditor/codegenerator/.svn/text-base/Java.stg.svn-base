@@ -1,0 +1,470 @@
+group Java implements ContextTreeTemplate; 
+
+contexClass(id,pack,pn,name,desc,ver, rmo,slist,llist,prop,sh,li) ::=<<
+###<id>NotationSyntaxService.java
+package <pn>;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Collection;
+import java.util.Set;
+
+import org.pathwayeditor.businessobjects.drawingprimitives.attributes.ConnectionRouter;
+import org.pathwayeditor.businessobjects.drawingprimitives.attributes.LineStyle;
+import org.pathwayeditor.businessobjects.drawingprimitives.attributes.LinkEndDecoratorShape;
+import org.pathwayeditor.businessobjects.drawingprimitives.attributes.PrimitiveShapeType;
+import org.pathwayeditor.businessobjects.drawingprimitives.attributes.RGB;
+import org.pathwayeditor.businessobjects.drawingprimitives.attributes.Size;
+import org.pathwayeditor.businessobjects.drawingprimitives.properties.IPropertyDefinition;
+import org.pathwayeditor.businessobjects.notationsubsystem.INotation;
+import org.pathwayeditor.businessobjects.notationsubsystem.INotationSubsystem;
+import org.pathwayeditor.businessobjects.notationsubsystem.INotationSyntaxService;
+import org.pathwayeditor.businessobjects.typedefn.ILinkObjectType;
+import org.pathwayeditor.businessobjects.typedefn.IObjectType;
+import org.pathwayeditor.businessobjects.typedefn.IRootObjectType;
+import org.pathwayeditor.businessobjects.typedefn.IShapeObjectType;
+import org.pathwayeditor.businessobjects.typedefn.ILinkObjectType.LinkEditableAttributes;
+import org.pathwayeditor.businessobjects.typedefn.ILinkTerminusDefinition.LinkTermEditableAttributes;
+import org.pathwayeditor.businessobjects.typedefn.IShapeObjectType.EditableShapeAttributes;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.FormattedTextPropertyDefinition;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.LinkObjectType;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.LinkTerminusDefinition;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.NumberPropertyDefinition;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.PlainTextPropertyDefinition;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.RootObjectType;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.ShapeObjectType;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.TextPropertyDefinition;
+
+public class <id>NotationSyntaxService implements INotationSyntaxService {
+  private static final int NUM_ROOT_OTS = 1;
+  private final INotation context;
+  private final Map \<Integer, IShapeObjectType\> shapes = new HashMap\<Integer, IShapeObjectType\>(); 
+  private final Map \<Integer, ILinkObjectType\> links = new HashMap\<Integer, ILinkObjectType\>();
+//  private final Set \<IPropertyDefinition\> propSet=new HashSet\<IPropertyDefinition\>();
+  
+  private RootObjectType rmo;
+  //shapes
+  <slist:{s | private ShapeObjectType <s>;<\n>}>
+  //links
+  <llist:{l | private LinkObjectType <l>;<\n>}>
+  
+  
+  private INotationSubsystem serviceProvider;
+
+	private static int[] getRGB(String hex) {
+		hex = hex.replace("#", "");
+		int r = Integer.parseInt(hex.substring(0, 2), 16);
+		int g = Integer.parseInt(hex.substring(2, 4), 16);
+		int b = Integer.parseInt(hex.substring(4), 16);
+		return new int[] { r, g, b };
+	}
+
+	private static IPropertyDefinition reassignVal(IPropertyDefinition prop,String val,boolean isEdit,boolean isVis){
+		if( prop instanceof TextPropertyDefinition) return reassignVal((TextPropertyDefinition) prop,val,isEdit,isVis);
+		if( prop instanceof FormattedTextPropertyDefinition) return reassignVal((FormattedTextPropertyDefinition) prop,val,isEdit,isVis);
+		if( prop instanceof NumberPropertyDefinition) return reassignVal((NumberPropertyDefinition) prop,val,isEdit,isVis);
+		return prop;
+	}
+	
+	private static PlainTextPropertyDefinition reassignVal(TextPropertyDefinition prop,String val,boolean isEdit,boolean isVis){
+		PlainTextPropertyDefinition newP=new PlainTextPropertyDefinition(prop.getName(),val,(prop.isVisualisable() | isVis),(prop.isEditable()&isEdit));
+  //  if(newP.isVisualisable())newP.setAppearance(prop.getAppearance());
+		return newP;
+	}
+	
+	private static FormattedTextPropertyDefinition reassignVal(FormattedTextPropertyDefinition prop,String val,boolean isEdit,boolean isVis){
+		FormattedTextPropertyDefinition newP=new FormattedTextPropertyDefinition(prop.getName(),val,(prop.isVisualisable() | isVis),(prop.isEditable()&isEdit));
+//		if(newP.isVisualisable())newP.setAppearance(prop.getAppearance());
+		return newP;
+	}
+	
+	private static NumberPropertyDefinition reassignVal(NumberPropertyDefinition prop,String val,boolean isEdit,boolean isVis){
+		NumberPropertyDefinition newP=new NumberPropertyDefinition(prop.getName(), new BigDecimal(val),(prop.isVisualisable() | isVis),(prop.isEditable()&isEdit));
+ //   if(newP.isVisualisable())newP.setAppearance(prop.getAppearance());
+		return newP;
+	}
+	
+
+	public <id>NotationSyntaxService(INotationSubsystem serviceProvider) {
+		this.serviceProvider=serviceProvider;
+		this.context = serviceProvider.getNotation();
+		//<name>
+		//<desc>
+		//<ver>
+		createRMO();
+	//shapes
+	<slist:{s | this.<s>= new ShapeObjectType(this,1<i0>, "<s>");<\n>create<s>();<\n>}>
+		defineParentingRMO();
+	//shapes parenting
+		<slist:{ id | defineParenting<id>();<\n>}>
+	//links
+	<llist:{l | this.<l> = new LinkObjectType(this, 2<i0>, "<l>");<\n>create<l>();<\n>}>
+	//shape set
+		<slist:{ s | this.shapes.put(this.<s>.getUniqueId(), this.<s>);<\n>}>
+	//link set
+		<llist:{ l | this.links.put(this.<l>.getUniqueId(), this.<l>);<\n>}>		
+	}
+
+  public INotationSubsystem getNotationSubsystem() {
+    return serviceProvider;
+  }
+  
+  public INotation getNotation() {
+    return this.context;
+  }
+
+  public Iterator\<ILinkObjectType\> linkTypeIterator() {
+    return this.links.values().iterator();
+  }
+
+  public IRootObjectType getRootObjectType() {
+    return this.rmo;
+  }
+
+  public Iterator\<IShapeObjectType\> shapeTypeIterator() {
+    return this.shapes.values().iterator();
+  }
+  
+  
+  public Iterator\<IObjectType\> objectTypeIterator(){
+    Set\<IObjectType\> retVal = new HashSet\<IObjectType\>(this.shapes.values());
+    retVal.addAll(this.links.values());
+    retVal.add(this.rmo);
+    return retVal.iterator();
+  }
+  
+  public boolean containsLinkObjectType(int uniqueId) {
+    return this.links.containsKey(uniqueId);
+  }
+
+  public boolean containsObjectType(int uniqueId) {
+    boolean retVal = this.links.containsKey(uniqueId);
+    if(!retVal){
+      retVal = this.shapes.containsKey(uniqueId);
+    }
+    if(!retVal){
+      retVal = this.rmo.getUniqueId() == uniqueId;
+    }
+    return retVal;
+  }
+
+  public boolean containsShapeObjectType(int uniqueId) {
+    return this.shapes.containsKey(uniqueId);
+  }
+
+  public ILinkObjectType getLinkObjectType(int uniqueId) {
+    return this.links.get(uniqueId);
+  }
+
+  public IObjectType getObjectType(int uniqueId) {
+    IObjectType retVal = this.links.get(uniqueId);
+    if(retVal == null){
+      retVal = this.shapes.get(uniqueId);
+    }
+    if(retVal == null){
+      retVal = (this.rmo.getUniqueId() == uniqueId) ? this.rmo : null;
+    }
+    if(retVal == null){
+      throw new IllegalArgumentException("The unique Id was not present in this notation subsystem");
+    }
+    return retVal;
+  }
+
+  public IShapeObjectType getShapeObjectType(int uniqueId) {
+    return this.shapes.get(uniqueId);
+  }
+
+  private \<T extends IObjectType\> T findObjectTypeByName(Collection\<? extends T\> otSet, String name){
+    T retVal = null;
+    for(T val : otSet){
+      if(val.getName().equals(name)){
+        retVal = val;
+        break;
+      }
+    }
+    return retVal;
+  }
+  
+  public ILinkObjectType findLinkObjectTypeByName(String name) {
+    return findObjectTypeByName(this.links.values(), name);
+  }
+
+  public IShapeObjectType findShapeObjectTypeByName(String name) {
+    return findObjectTypeByName(this.shapes.values(), name);
+  }
+
+  public int numLinkObjectTypes() {
+    return this.links.size();
+  }
+
+  public int numShapeObjectTypes() {
+    return this.shapes.size();
+  }
+
+  public int numObjectTypes(){
+    return this.numLinkObjectTypes() + this.numShapeObjectTypes() + NUM_ROOT_OTS;
+  }
+
+	<rmo>
+	<sh>
+	
+	<li>	
+
+	<prop>
+
+}<\n>
+>>
+
+/**
+*/
+rgbT(rgb) ::= "new int[]{<rgb>}"
+
+hexT(rgb) ::= "getRGB(\"<rgb>\")"
+
+addAllExcept(main,remove) ::= <<
+set.addAll(Arrays.asList(new IShapeObjectType[]{this.<main; separator=", this.">}));
+set.removeAll(Arrays.asList(new IShapeObjectType[]{this.<remove; separator=", this.">}));
+>>
+
+addList(list) ::= <<
+set.addAll(Arrays.asList(new IShapeObjectType[]{this.<list; separator=", this.">}));
+>>
+
+/**
+ * Empty valid children list definition
+ */
+containsNone(shape) ::= <<
+this.<shape>.getParentingRules().clear();
+>>
+
+/**
+ * Define nonempty children list
+ */
+containsList(shape,list) ::= <<
+HashSet\<IShapeObjectType\> set=new HashSet\<IShapeObjectType\>();
+<list>
+for (IShapeObjectType child : set) {
+  this.<shape>.getParentingRules().addChild(child);
+}<\n>
+>>
+
+endDef(id,src,list) ::=<<
+set=new HashSet\<IShapeObjectType\>();
+<list>
+for (IShapeObjectType tgt : set) {
+  this.<id>.getLinkConnectionRules().addConnection(this.<src>, tgt);
+}<\n>
+>>
+
+version(ver) ::= "getVersion(\"<ver>\")"
+
+//setName(name) ::= ".setName(<name>)"
+setName(name) ::= "<name>"
+
+//setDescription(descr) ::=".setDescription(<descr>)"
+setDescription(descr) ::="<descr>"
+
+defineShape(id,name,desc,sd,up,cont,lw,ls,lc,ilw,ils,ilc,ist,iss,isc) ::= <<
+private void create<id>(){
+<desc:{d| this.<id>.setDescription(<d>);}>//ment to be TypeDescription rather
+//this.<id>.getDefaultAttributes().setName(<name>);
+this.<id>.getDefaultAttributes().setShapeType(PrimitiveShapeType.RECTANGLE);
+this.<id>.getDefaultAttributes().setFillColour(new RGB(255,255,255));
+this.<id>.getDefaultAttributes().setSize(new Size(20,20));
+int[] lc=<lc>;
+this.<id>.getDefaultAttributes().setLineWidth(<lw>);
+this.<id>.getDefaultAttributes().setLineStyle(LineStyle.<ls>);
+this.<id>.getDefaultAttributes().setLineColour(new RGB(lc[0],lc[1],lc[2]));
+<sd>
+
+EnumSet\<EditableShapeAttributes\> editableAttributes = EnumSet.noneOf(EditableShapeAttributes.class);
+if(<isc>){
+    editableAttributes.add(EditableShapeAttributes.FILL_COLOUR);
+}
+//this.<id>.getDefaultAttributes().setFillEditable(<isc>);
+if(<ist>){
+    editableAttributes.add(EditableShapeAttributes.SHAPE_TYPE);
+}
+//this.<id>.setPrimitiveShapeTypeEditable(<ist>);
+if(<iss>){
+    editableAttributes.add(EditableShapeAttributes.SHAPE_SIZE);
+}
+//this.<id>.setSizeEditable(<iss>);
+if(<ils>){
+    editableAttributes.add(EditableShapeAttributes.LINE_STYLE);
+}
+//this.<id>.getDefaultAttributes().setLineStyleEditable(<ils>);
+if(<ilw>){
+    editableAttributes.add(EditableShapeAttributes.LINE_WIDTH);
+}
+//this.<id>.getDefaultAttributes().setLineWidthEditable(<ilw>);
+if(<ilc>){
+    editableAttributes.add(EditableShapeAttributes.LINE_COLOUR);
+}
+//this.<id>.getDefaultAttributes().setLineColourEditable(<ilc>);
+this.<id>.setEditableAttributes(editableAttributes);
+this.<id>.getDefaultAttributes().setUrl("");
+<up>
+}
+
+	private void defineParenting<id>(){
+		<cont>
+	}
+
+	public ShapeObjectType get<id>(){
+		return this.<id>;
+	}<\n>
+>>
+
+defineLink(id,name,desc,sd,up,port,ends,lw,ls,lc,ilw,ils,ilc,ist,iss,isc) ::=<<
+private void create<id>(){
+Set\<IShapeObjectType\> set=null;
+<desc:{d| this.<id>.setDescription(<d>);}>
+int[] lc=<lc>;
+this.<id>.getDefaultAttributes().setLineWidth(<lw>);
+this.<id>.getDefaultAttributes().setLineStyle(LineStyle.<ls>);
+this.<id>.getDefaultAttributes().setLineColour(new RGB(lc[0],lc[1],lc[2]));
+this.<id>.getDefaultAttributes().setName(<name>);
+this.<id>.getDefaultAttributes().setDescription("");
+this.<id>.getDefaultAttributes().setDetailedDescription("");
+this.<id>.getDefaultAttributes().setRouter(ConnectionRouter.SHORTEST_PATH);
+EnumSet\<LinkEditableAttributes\> editableAttributes = EnumSet.noneOf(LinkEditableAttributes.class);
+if(<ilc>){
+  editableAttributes.add(LinkEditableAttributes.COLOUR);
+}
+//this.<id>.getDefaultAttributes().setLineColourEditable(<ilc>);
+if(<ils>){
+  editableAttributes.add(LinkEditableAttributes.LINE_STYLE);
+}
+//this.<id>.getDefaultAttributes().setLineStyleEditable(<ils>);
+if(<ilw>){
+  editableAttributes.add(LinkEditableAttributes.LINE_WIDTH);
+}
+//this.<id>.getDefaultAttributes().setLineWidthEditable(<ilw>);
+this.<id>.setEditableAttributes(editableAttributes);
+
+this.<id>.getDefaultAttributes().setUrl("");
+<up>
+//LinkEndDefinition sport=this.<id>.getLinkSource();
+//LinkEndDefinition tport=this.<id>.getLinkTarget();
+LinkTerminusDefinition sport=this.<id>.getSourceTerminusDefinition();
+LinkTerminusDefinition tport=this.<id>.getTargetTerminusDefinition();
+<port>
+<ends>
+}
+
+public LinkObjectType get<id>(){
+	return this.<id>;
+}<\n>
+>>
+
+
+setLineProp() ::=<<
+.setLineProperty(int lineWidth, LineStyle lineStyle, int red,
+			int green, int blue);
+>>
+
+setShapeType(id,type) ::=<<
+this.<id>.getDefaultAttributes().setShapeType(PrimitiveShapeType.<type>);
+>>
+
+setFillProperty(id,colour) ::=<<
+int[] c=<colour>;
+this.<id>.getDefaultAttributes().setFillColour(new RGB(c[0],c[1],c[2]));
+>>
+
+setSize(id,size) ::=<<
+		int[] s=new int[]{<size>};
+		this.<id>.getDefaultAttributes().setSize(new Size(s[0],s[1]));
+>>
+
+offset(pt,v) ::="<pt>.getDefaultAttributes().setGap((short)<v>);"
+
+port(def) ::="<def>"
+
+rmo(up,cont) ::=<<
+	private void createRMO(){
+		this.rmo= new RootObjectType(0, "Root Object", "ROOT_OBJECT", this);
+		<up>
+	}
+	private void defineParentingRMO(){
+		<cont>
+	}<\n>
+>>
+
+portDef(pt,ast,asz,ofs,st,ss,sc,lw,ls,lc,up,ilw,ils,ilc,ist,iss,isc) ::=<<
+<if(!ofs)><pt>.getDefaultAttributes().setGap((short)0);//to set default offset value<endif>
+<ofs>
+<pt>.getDefaultAttributes().setEndDecoratorType(LinkEndDecoratorShape.<ast>);//, <asz>);
+<pt>.getDefaultAttributes().setEndSize(new Size(<asz>));
+<pt>.getDefaultAttributes().setTermDecoratorType(PrimitiveShapeType.<st>);
+<pt>.getDefaultAttributes().setTermSize(new Size(<ss>));
+int[] c<pt>=<sc>;
+<pt>.getDefaultAttributes().setTermColour(new RGB(c<pt>[0],c<pt>[1],c<pt>[2]));
+//<pt>.getDefaultAttributes().setLineProperties(<lw>, LineStyle.<ls>);
+EnumSet\<LinkTermEditableAttributes\> editable<pt>Attributes = EnumSet.of(LinkTermEditableAttributes.END_SIZE, LinkTermEditableAttributes.OFFSET,
+                  LinkTermEditableAttributes.TERM_DECORATOR_TYPE, LinkTermEditableAttributes.TERM_SIZE);
+if(<ist>){
+  editable<pt>Attributes.add(LinkTermEditableAttributes.END_DECORATOR_TYPE);
+}
+//<pt>.getDefaultAttributes().setShapeTypeEditable(<ist>);
+if(<isc>){
+  editable<pt>Attributes.add(LinkTermEditableAttributes.TERM_COLOUR);
+}
+//<pt>.getDefaultAttributes().setColourEditable(<isc>);
+<pt>.setEditableAttributes(editable<pt>Attributes);
+<up>
+>>
+/**
+ * Global property definition for reuse in several objects
+ */
+ //<!	<localProperty(id=<id>,name=<name>,desc=<desc>,def=<def>,val=<val>,ise=<ise>,isv=<isv>)>!>
+globalProperty(id,name,desc,def,val,ise,isv) ::=<<
+private IPropertyDefinition getProp<id>(){
+	IPropertyDefinition <id>=<def><name>,<val; null="\" \"">,<isv>,<ise>);
+	return <id>;
+}<\n>
+>>
+
+/**
+ * Local property definition for use in particular object
+ */
+localProperty(obj,id,name,desc,def,val,ise,isv) ::=<<
+	IPropertyDefinition <id>=<def><name>,<val; null="\" \"">,<isv>,<ise>);
+	this.<obj>.getDefaultAttributes().addPropertyDefinition(<id>);
+>>
+
+simpleType() ::=<<
+new PlainTextPropertyDefinition(
+>>
+
+richType() ::=<<
+new FormattedTextPropertyDefinition(
+>>
+
+/**
+ * Number property type 
+ */
+ numberType() ::=<<
+ new NumberPropertyDefinition(
+ >>
+/**
+ * Assigns new value to globally defined property
+ */
+ assignVal(obj,id,val,ise,isv) ::=<<
+IPropertyDefinition <id>=reassignVal(getProp<id>(),<val>,<ise>,<isv>);
+<obj>.getDefaultAttributes().addPropertyDefinition(<id>);
+ >>
+ 
+ /**
+ * Assigns new value to standard predefined property, like "Name" or URL
+ */
+ assignPredef(obj,id,val,ise,isv) ::=<<
+ 	
+ 	this.<obj>.getDefaultAttributes().set<id>(<val>);
+ >>

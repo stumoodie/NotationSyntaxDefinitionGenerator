@@ -1,0 +1,151 @@
+/**
+* Test metabolic context
+*/
+context org.pathwayeditor.Simple (name = "Simple context" descr="Simple Context" version=1.2.0)
+
+property ECnum (name="EC" descr="Enzyme comission number" type=simple visualisable) = "-"
+property Smiles (name="SMILES" descr="string representation of compound structure" type=simple)
+property Stoich (name="STOICH" descr="Stoichiometry coefficient" type=simple visualisable)
+property Role (name="ROLE" descr="role of compound in the process" type=simple)
+property IC (name="IC" descr="initial concentration of the compound" type=number)
+property KineticLaw (name="KineticLaw" descr="MathML description of kinetic law and kinetic constants" type=simple)
+property CID (name="CID" descr="compound ID in DB" type = simple visualisable)
+property GOTerm (name="GO term" descr="GO annotation" type = simple)
+
+RMO	( contains [Process, Compound, Compartment])
+
+shape 	Compartment (name="Compartment" descr="Functional compartment"
+		stype = ROUNDED_RECTANGLE
+		size = [200,200]
+		GOTerm = " "
+		contains [*]
+		Url = "http://www.proteinatlas.org"
+	)
+	
+shape 	Process ( name="Reaction" descr="chemical conversion of compounds"
+		stype = RECTANGLE
+		size(read-only) = [10,10]
+		lcolor = [0,0,0]
+		fcolor = [255,255,255]
+		ECnum = "-.-.-.-"
+		KineticLaw = " "
+		contains [*]
+	)
+
+shape 	Compound ( name="Compound" descr="chemical entity"
+		stype = ELLIPSE
+		size = [20,20]
+		contains [Process, Compound]
+		lcolor = [255,0,0]
+		fcolor = [255,255,255]
+		contains []
+		Smiles = " "
+		IC = "1.0"
+	)
+
+shape 	Macromolecule (name = "Macromolecule" descr="polymer"
+		stype = ROUNDED_RECTANGLE
+		size = [20,20]
+		lcolor = [0,0,0]
+		fcolor = [255,255,255]
+		GOTerm = " "
+		contains [Macromolecule, Compound]
+	)
+
+/*
+shape IdentityGate (name="Identity gate" descr="Gate between generic and specific elemts"
+		stype = ELLIPSE
+		size = [60,60]
+		lcolor = [0,0,0]
+		fcolor = [255,255,255]
+		contains []
+	)
+*/	
+	
+link	Consume (name="Consumption Link" 
+		lcolor = [0,0,0]
+		source = Compound target = [Process]
+		source = Macromolecule target = [Process]
+		sport = NONE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			Role(visualisable) = "substrate"
+		)
+		tport = NONE (stype = RECTANGLE
+			offset = 0
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			Stoich = "1"
+		)
+	)
+link	Produce (name="Consumption Link" 
+		lcolor = [0,0,0]
+		source = Process target = [Compound]
+		sport = NONE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			offset = 2
+			Stoich = "1"
+		)
+		tport = TRIANGLE[20,20](stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			Role = "product"
+		)
+	)
+link	Activation (name="Activation Link" 
+		lcolor = [0,0,0]
+		source = Compound target = [Process]
+		sport = NONE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			offset = 2
+			Stoich = "1"
+		)
+		tport = TRIANGLE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			Role = "activator"
+		)
+	)
+link	Catalusis (name="Catalusis Link" 
+		lcolor = [0,0,0]
+		source = Compound target = [Process]
+		sport = NONE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			offset = 2
+			Stoich = "1"
+		)
+		tport = DIAMOND (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			Role = "activator"
+		)
+	)
+link	Inhibition (name="Inhibition Link" 
+		lcolor = [0,0,0]
+		source = Compound target = [Process]
+		source = Macromolecule target = [Process]
+		sport = NONE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			offset = 2
+			Stoich = "1"
+		)
+		tport = BAR (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+			Role = "inhibitor"
+		)
+	)

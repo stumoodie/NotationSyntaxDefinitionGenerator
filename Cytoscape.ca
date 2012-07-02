@@ -1,0 +1,31 @@
+/**
+* Basic cytoscape  context
+*/
+context uk.ac.ed.inf.csb.BasicCytoscape (name = "Basic Cytoscape Context" descr="Context to test code generation of a basic cytoscape" version=1.0.0)
+
+property Interacts (name="interacts" descr="interaction between two nodes" type=simple visualisable)
+
+RMO	( contains [Node])
+
+shape 	Node (name="Node" descr="node"
+		stype = ELLIPSE
+		size = [50,50]
+		contains []
+	)
+		
+link	Edge (name="Edge" 
+		lcolor = [0,0,0]
+		Interacts=" "
+		source = Node target = [Node]
+		sport = NONE (stype = RECTANGLE
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+		)
+		tport = NONE (stype = RECTANGLE
+			offset = 0
+			size = [0,0]
+			lcolor = [0,0,0]
+			fcolor = [255,255,255]
+		)
+	)

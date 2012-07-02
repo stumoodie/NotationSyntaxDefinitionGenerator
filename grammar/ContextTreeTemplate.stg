@@ -1,0 +1,157 @@
+interface ContextTreeTemplate; 
+
+contexClass(id,pack,pn,name,desc,ver, rmo,slist,llist,prop,sh,li);
+/**
+ *
+ */
+rgbT(rgb);
+
+/**
+ *
+ */
+hexT(rgb);
+
+/**
+ * Exception list definition like
+ * <pre>
+ * ![A,B,C]  
+ * </pre>
+ * in shape definition
+ */
+addAllExcept(main,remove);
+
+/**
+ * Exact list definition like
+ * <pre>
+ * [A,B,C]  
+ * </pre>
+ * in shape definition
+ */
+addList(list);
+
+/**
+ * Empty valid children list definition like
+ * <pre>
+ * contains []  
+ * </pre>
+ * in shape definition
+ */
+containsNone(shape);
+
+/**
+ * Define nonempty children list like
+ * <pre>
+ * contains [A,B,C]  
+ * </pre>
+ * in shape definition
+ */
+containsList(shape,list);
+
+/**
+ * Definition of connectivity constraints like
+ * <pre>
+ * source = Process target = [Compound]  
+ * </pre>
+ * in link definition
+ */
+endDef(id,src,list);
+
+/**
+ *
+ */
+version(ver);
+
+/**
+ *
+ */
+setName(name);
+
+/**
+ *
+ */
+setDescription(descr);
+
+/**
+ * Basic shape definition
+ */
+defineShape(id,name,desc,sd,up,cont,lw,ls,lc,ilw,ils,ilc,ist,iss,isc);
+
+/**
+ * Basic link definition
+ */
+defineLink(id,name,desc,sd,up,port,ends,lw,ls,lc,ilw,ils,ilc,ist,iss,isc);
+
+/**
+ * definition f line properties like line width, style and colour
+ */
+setLineProp();
+
+/**
+ * shape type definition
+ */
+setShapeType(id,type);
+
+/**
+ * shape fill colour definition
+ */
+setFillProperty(id,colour);
+
+/**
+ * size definition
+ */
+setSize(id,size);
+
+/**
+ * arrow head offset definition
+ */
+offset(pt,v);
+
+/**
+ * Port description
+ */
+port(def);
+
+/**
+ * RMO definition
+ */
+rmo(up,cont);
+
+/**
+ * Port definition
+ */
+portDef(pt,ast,asz,ofs,st,ss,sc,lw,ls,lc,up,ilw,ils,ilc,ist,iss,isc);
+
+/**
+ * Global property definition for reuse in several objects
+ */
+globalProperty(id,name,desc,def,val,ise,isv);
+
+/**
+ * Local property definition for use in particular object
+ */
+localProperty(obj,id,name,desc,def,val,ise,isv);
+
+/**
+ * Simple property type (ASCII string)
+ */
+ simpleType();
+ 
+/**
+ * RichText property type (HTML string)
+ */
+ richType();
+ 
+/**
+ * Number property type 
+ */
+ numberType();
+ 
+/**
+ * Assigns new value to globally defined property
+ */
+ assignVal(obj,id,val,ise,isv);
+ 
+/**
+ * Assigns new value to standard predefined property, like "Name" or URL
+ */
+ assignPredef(obj,id,val,ise,isv);

@@ -1,0 +1,49 @@
+9
+
+dir
+4769
+svn+ssh://svn.inf.ed.ac.uk/svn/epedev/ContextAdapterCodeGeneration/trunk/libs
+svn+ssh://svn.inf.ed.ac.uk/svn/epedev
+
+
+
+2009-03-23T22:02:57.485911Z
+4727
+smoodie
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+db7d2899-3286-43a5-ace7-49031799319a
+
+BusinessObjects
+dir
+
+ToolKit
+dir
+
+antlr-3.1.2
+dir
+
+antlr3-task
+dir
+
+easymock2.4
+dir
+
+jopt-simple-3.0.1
+dir
+
+junit4.5
+dir
+

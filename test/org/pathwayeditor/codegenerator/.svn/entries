@@ -1,0 +1,34 @@
+9
+
+dir
+4769
+svn+ssh://svn.inf.ed.ac.uk/svn/epedev/ContextAdapterCodeGeneration/trunk/test/org/pathwayeditor/codegenerator
+svn+ssh://svn.inf.ed.ac.uk/svn/epedev
+
+
+
+2009-03-23T22:53:44.143491Z
+4730
+smoodie
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+db7d2899-3286-43a5-ace7-49031799319a
+
+test
+dir
+
+tools
+dir
+

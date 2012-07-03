@@ -23,16 +23,17 @@ scope LineScope{
 }
 
 @header{
-package org.pathwayeditor.codegenerator;
+package org.pathwayeditor.codegenerator.gen;
+
 import org.antlr.stringtemplate.*;
 }
 
 @members{
-	ArrayList<String> shapeList=new ArrayList<String>();
-	ArrayList<String> linkList=new ArrayList<String>();
+	List<String> shapeList=new ArrayList<String>();
+	List<String> linkList=new ArrayList<String>();
 }
 
-context[ ArrayList<String> slist, ArrayList<String> llist, String packageName]
+context[ List<String> slist, List<String> llist, String packageName]
 scope {String objName;} 	
 @init{
 	this.shapeList=slist;

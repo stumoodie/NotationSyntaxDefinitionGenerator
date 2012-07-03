@@ -1,1 +1,3 @@
 bin
+src/org/pathwayeditor/codegenerator/gen/
+antBuild

@@ -7,9 +7,9 @@
     <property name="version" value="0.9.00" />
     
     <!-- set global properties for this build -->
-    <property name="build.root" location="build"/>
+    <property name="build.root" location="antBuild"/>
     <property name="build.bin" location="${build.root}/bin"/>
-    <property name="build.bin" location="${build.root}/test"/>
+    <property name="build.test" location="${build.root}/test"/>
     <property name="core.src" location="src"/>
     <property name="core.test" location="test"/>
     <property name="parser.output" location="${core.src}/org/pathwayeditor/codegenerator/gen"/>
@@ -41,21 +41,21 @@
 	<property name="antlr" value="${lib.dir}/antlr/lib"/>
 
 	<path id="buildclasspath">
-		<pathelement location="${lib.dir}/antlr-3.4/antlr-3.4-complete.jar"/>
-		<pathelement location="${lib.dir}/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" />
+	  <pathelement location="${lib.dir}/antlr-3.4/lib/antlr-3.4-complete.jar"/>
+	  <pathelement location="${lib.dir}/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" />
 	</path>
 	
 	<path id="test.classpath">
-		<path refid="buildclasspath" />
-		<pathelement location="${lib.dir}/easymock2.4/easymock.jar"/>
-		<pathelement location="${lib.dir}/junit4.10/junit-4.10.jar"/>
-		<pathelement location="${lib.dir}/ToolKit/toolkit.jar"/>
-		<pathelement location="${lib.dir}/BusinessObjects/BusinessObjects.jar"/>
+	  <path refid="buildclasspath" />
+	  <pathelement location="${lib.dir}/easymock2.4/easymock.jar"/>
+	  <pathelement location="${lib.dir}/junit4.10/junit-4.10.jar"/>
+	  <pathelement location="${lib.dir}/ToolKit/toolkit.jar"/>
+	  <pathelement location="${lib.dir}/BusinessObjects/BusinessObjects.jar"/>
 	</path>
 
     <target name="init">
-      <mkdir dir="build"/>
-      <mkdir dir="build/bin"/>
+      <mkdir dir="${build.root}"/>
+      <mkdir dir="${build.bin}"/>
     </target>
 
     <macrodef name="antlr3">
@@ -93,11 +93,11 @@
     <target name="compile" depends="grammar,walker,init" description="compile">
         <!-- Compile the java code from ${src} into ${classes} -->
         <javac debug="true" srcdir="${core.src}" destdir="${build.bin}" includeantruntime="false"
-               listfiles="yes" deprecation="yes" excludes="**/*SyntaxService.java" >
+               listfiles="yes" deprecation="yes" excludes="**/*SyntaxService.java" verbose="false" >
              <classpath refid="buildclasspath"/>
         </javac>
 		<copy todir="${build.bin}">
-			<fileset dir="${src}">
+			<fileset dir="${core.src}">
 				<exclude name="**/*.java" />
 				<exclude name="**/*.class" />
 			</fileset>
@@ -112,12 +112,9 @@
                         <attribute name="Main-Class" value="${main.class}" />
                         <attribute name="Class-Path" value=".:org/pathwayeditor/codegenerator" />
                 </manifest>
-                <fileset dir="${classes}" />
-				<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/antlr-3.1.2/lib/antlr-2.7.7.jar"/>
-        		<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/antlr-3.1.2/lib/antlr-3.1.2.jar" />
-        		<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/antlr-3.1.2/lib/stringtemplate-3.2.jar" />
-        		<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/antlr-3.1.2/lib/antlr-runtime-3.1.2.jar" />
-	    		<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" />
+                <fileset dir="${build.bin}" />
+        	<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/antlr-3.4/lib/antlr-3.4-complete.jar" />
+	    	<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" />
         </jar>
     </target>
 
@@ -173,9 +170,10 @@
                 version="true"
                 use="true"
                 windowtitle="${ant.project.name}"
-                sourcepath="${src}"
+                sourcepath="${core.src}"
                 linksource="yes"
                 breakiterator="yes">
+       	<classpath refid="buildclasspath" />
        </javadoc>
     </target>
 
@@ -184,7 +182,7 @@
     </target>
 
     <target name="clean" depends="clean-grammar" description="Cleans up build files and generated src files">
-      <delete dir="build"/>
+      <delete dir="${build.root}"/>
     </target>
     
     <target name="all" depends="dist, doc" description="create a distribution and javadocs"/>

@@ -25,7 +25,10 @@ import org.antlr.stringtemplate.AutoIndentWriter;
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
 import org.antlr.stringtemplate.StringTemplateWriter;
-import org.pathwayeditor.codegenerator.ContextTreeParser.context_return;
+import org.pathwayeditor.codegenerator.gen.ContextTreeLexer;
+import org.pathwayeditor.codegenerator.gen.ContextTreeParser.context_return;
+import org.pathwayeditor.codegenerator.gen.ContextTreeParser;
+import org.pathwayeditor.codegenerator.gen.ContextTreeWalker;
 import org.pathwayeditor.codegenerator.tools.FolderSplitWriter;
 
 public class SyntaxDefinitionGenerator {
@@ -154,7 +157,7 @@ public class SyntaxDefinitionGenerator {
 		parser = new ContextTreeParser(tokens);
 		ContextTreeParser.context_return r = parser.context();
 		if (packageName == null) {
-			packageName = parser.packageName.toString();
+			packageName = parser.getPackageName();
 		}
 		inStream.close();
 		return r;
@@ -264,8 +267,8 @@ public class SyntaxDefinitionGenerator {
 			throws RecognitionException {
 		ContextTreeWalker walker = new ContextTreeWalker(nodes);
 		walker.setTemplateLib(templates);
-		RuleReturnScope rw = (RuleReturnScope) walker.context(parser.shapeList,
-				parser.linkList, packageName);
+		RuleReturnScope rw = (RuleReturnScope) walker.context(parser.getShapeList(),
+				parser.getLinkList(), packageName);
 		return (StringTemplate) rw.getTemplate();
 	}
 

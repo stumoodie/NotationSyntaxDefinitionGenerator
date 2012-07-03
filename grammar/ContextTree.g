@@ -20,16 +20,29 @@ tokens {
 }
 
 @header{
-package org.pathwayeditor.codegenerator;
+package org.pathwayeditor.codegenerator.gen;
 }
 @lexer::header{
-package org.pathwayeditor.codegenerator;
+package org.pathwayeditor.codegenerator.gen;
 }
 
 @members{
-	ArrayList<String> shapeList=new ArrayList<String>();
-	ArrayList<String> linkList=new ArrayList<String>();
+	private ArrayList<String> shapeList=new ArrayList<String>();
+	private ArrayList<String> linkList=new ArrayList<String>();
 	StringBuffer packageName=new StringBuffer();
+	
+	public String getPackageName(){
+	  return packageName.toString();
+	}
+	
+	public List<String> getShapeList(){
+	  return new ArrayList<String>(this.shapeList);
+	}
+	
+	public List<String> getLinkList(){
+	  return new ArrayList<String>(this.linkList);
+	}
+	
 	}
 
 context	returns[String name] :	ML_COMMENT? contextDef {$name=$contextDef.id;} properties+ rmo shapes+  links+ EOF -> ^(contextDef rmo ^(PROP_LIST properties+) ^(SHAPE_LIST shapes+) ^(LINK_LIST links+)  )

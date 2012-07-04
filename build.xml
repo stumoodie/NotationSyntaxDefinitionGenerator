@@ -104,7 +104,29 @@
 		</copy>
     </target>
 
-    <target name="dist" depends="compile,init" description="generate for distribution">
+   <target name="run_parser" depends="compile">
+        <java classname="org.pathwayeditor.codegenerator.SyntaxDefinitionGenerator" fork="true"
+           maxmemory="256m" failonerror="true" classpathref="buildclasspath">
+           <classpath>
+             <pathelement location="${build.bin}"/>
+             <pathelement location="."/>
+          </classpath>
+          <arg value="-p" />
+          <arg value="org.pathwayeditor" />
+          <arg value="simple_eg.ns" />
+        </java>
+   </target>
+
+   <target name="dot2pdf" description="Creates pdf file from AST dot file." depends="">
+     <exec executable="dot" searchpath="true" spawn="true">
+       <arg value="-Tpdf"/>
+       <arg value="-o"/>
+       <arg value="treeGrammar.pdf"/>
+       <arg value="treeGrammar.dot"/>
+     </exec>
+   </target>
+
+        	<target name="dist" depends="compile,init" description="generate for distribution">
     	<mkdir dir="${dist.jar}" />
         <jar destfile="${jar.name}" filesetmanifest="mergewithoutmain">
                 <manifest>

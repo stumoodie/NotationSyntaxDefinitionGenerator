@@ -1,0 +1,48 @@
+/*
+* Test simple notation
+*/
+notation org.pathwayeditor.codegenerator.Simple (name = "Simple Notation" descr="Simple Notation to test" version=0.1.0)
+
+property ECnum (name="EC" descr="Enzyme comission number" type=text visualisable)
+property Stoich (name="STOICH" descr="Stoichiometry coefficient" type=real)
+
+root ( ) 
+
+shape   Compartment (name="Compartment" descr="Functional compartment"
+                defn = "rect"
+                size = [200,200]
+                fcolor = #ffffffff
+                lstyle = SOLID
+                lwidth = 2.0
+                lcolor = #000000ff
+                Stoich = 2
+        )
+        
+shape   Process ( name="Reaction" descr="chemical conversion of compounds"
+                defn = "oval"
+                size = [10,10]
+                fcolor = #ffffffff
+                lstyle = SOLID
+                lwidth = 1
+                lcolor = #ffff00ff
+                ECnum = "-.-.-.-"
+        )
+
+anchorNode Outcome ( name="Outcome" descr="Outcome" defn="oval" size=[10, 10] fcolor = #ffffffff lstyle=SOLID lwidth=1.0 lcolor=#000000ff )
+       
+link    Consume (name="Consumption Link"
+                lstyle = DASHED
+                lwidth = .99
+                lcolor = #000000ff
+                sterm = NONE (
+                        offset = 0
+                        size = [0,0]
+                )
+                tterm = NONE (
+                        offset = 0
+                        size = [0,0]
+                )
+                Compartment [Process]
+        )
+
+Compartment ^ [Process]

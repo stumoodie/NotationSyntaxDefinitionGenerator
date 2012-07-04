@@ -2,10 +2,11 @@ package org.pathwayeditor.codegenerator;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -18,17 +19,14 @@ import joptsimple.OptionSpec;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.RuleReturnScope;
-import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
+import org.antlr.runtime.tree.DOTTreeGenerator;
+import org.antlr.runtime.tree.Tree;
 import org.antlr.stringtemplate.AutoIndentWriter;
 import org.antlr.stringtemplate.StringTemplate;
-import org.antlr.stringtemplate.StringTemplateGroup;
 import org.antlr.stringtemplate.StringTemplateWriter;
 import org.pathwayeditor.codegenerator.gen.ContextTreeLexer;
-import org.pathwayeditor.codegenerator.gen.ContextTreeParser.context_return;
 import org.pathwayeditor.codegenerator.gen.ContextTreeParser;
-import org.pathwayeditor.codegenerator.gen.ContextTreeWalker;
 import org.pathwayeditor.codegenerator.tools.FolderSplitWriter;
 
 public class SyntaxDefinitionGenerator {
@@ -143,24 +141,36 @@ public class SyntaxDefinitionGenerator {
 	}
 
 	private void run() throws Exception {
-		ContextTreeParser.context_return r = parseInput();
+//		ContextTreeParser.context_return r = parseInput();
+		parseInput();
 //		CommonTree t = parseAST(r);
-		writeSyntaxDefinition(r);
+//		writeSyntaxDefinition(r);
 //		writeSupportClasses(t);
 	}
 
-	private ContextTreeParser.context_return parseInput() throws IOException, RecognitionException{
+    private static void dumpTree(Object ast, File oFile) throws FileNotFoundException{
+		DOTTreeGenerator dtg = new DOTTreeGenerator();
+		StringTemplate st = dtg.toDOT((Tree)ast);
+		PrintStream os = new PrintStream(new FileOutputStream(oFile)); 
+		os.println(st);
+		os.close();
+    }
+
+//	private ContextTreeParser.context_return parseInput() throws IOException, RecognitionException{
+	private void parseInput() throws IOException, RecognitionException{
 		InputStream inStream = new FileInputStream(fileName);
 		ANTLRInputStream input = new ANTLRInputStream(inStream);
 		ContextTreeLexer lexer = new ContextTreeLexer(input);
 		tokens = new CommonTokenStream(lexer);
 		parser = new ContextTreeParser(tokens);
-		ContextTreeParser.context_return r = parser.context();
-		if (packageName == null) {
-			packageName = parser.getPackageName();
-		}
+		ContextTreeParser.notation_spec_return r = parser.notation_spec();
+		dumpTree(r.getTree(), new File("treeGrammar.dot"));
+
+//		if (packageName == null) {
+//			packageName = parser.getPackageName();
+//		}
 		inStream.close();
-		return r;
+//		return r;
 	}
 	
 //	private void writeSupportClasses(CommonTree t) throws RecognitionException, IOException{
@@ -174,16 +184,16 @@ public class SyntaxDefinitionGenerator {
 //		copyDefinition(fileName, new File(packageName));
 //	}
 	
-	private void writeSyntaxDefinition(context_return r) throws RecognitionException, IOException{
-		CommonTree t = (CommonTree) r.getTree();
-		nodes = new CommonTreeNodeStream(t);
-		nodes.setTokenStream(tokens);
-		StringTemplate stj = walkTreeWithJava(parser, nodes);
-		// System.out.println(stj.toString());
-		String prefix = target.toString();// +"src";
-		// String typeName = "ContextAdapterSyntaxService";
-		sendOut(prefix, stj);
-	}
+//	private void writeSyntaxDefinition(context_return r) throws RecognitionException, IOException{
+//		CommonTree t = (CommonTree) r.getTree();
+//		nodes = new CommonTreeNodeStream(t);
+//		nodes.setTokenStream(tokens);
+//		StringTemplate stj = walkTreeWithJava(parser, nodes);
+//		// System.out.println(stj.toString());
+//		String prefix = target.toString();// +"src";
+//		// String typeName = "ContextAdapterSyntaxService";
+//		sendOut(prefix, stj);
+//	}
 	
 //	private CommonTree parseAST(ContextTreeParser.context_return r) throws IOException{
 //		CommonTree t = (CommonTree) r.getTree();
@@ -231,19 +241,19 @@ public class SyntaxDefinitionGenerator {
 		fw.close();
 	}
 
-	private StringTemplate walkTreeWithJava(ContextTreeParser parser,
-			CommonTreeNodeStream nodes) throws RecognitionException,
-			IOException {
-		InputStream is = this.getClass().getResourceAsStream(SYNTAX_DEFN_TEMPLATE);
-		if(is == null){
-			throw new RuntimeException("Cannot open Resource: " + SYNTAX_DEFN_TEMPLATE);
-		}
-//		FileReader fr = new FileReader(SYNTAX_DEFN_TEMPLATE);
-		Reader fr = new InputStreamReader(is);
-		StringTemplateGroup templates = new StringTemplateGroup(fr);
-		fr.close();
-		return walkTree(parser, nodes, templates);
-	}
+//	private StringTemplate walkTreeWithJava(ContextTreeParser parser,
+//			CommonTreeNodeStream nodes) throws RecognitionException,
+//			IOException {
+//		InputStream is = this.getClass().getResourceAsStream(SYNTAX_DEFN_TEMPLATE);
+//		if(is == null){
+//			throw new RuntimeException("Cannot open Resource: " + SYNTAX_DEFN_TEMPLATE);
+//		}
+////		FileReader fr = new FileReader(SYNTAX_DEFN_TEMPLATE);
+//		Reader fr = new InputStreamReader(is);
+//		StringTemplateGroup templates = new StringTemplateGroup(fr);
+//		fr.close();
+//		return walkTree(parser, nodes, templates);
+//	}
 
 //	private StringTemplate walkTreeWithServiceProvider(
 //			ContextTreeParser parser, CommonTreeNodeStream nodes)
@@ -262,15 +272,15 @@ public class SyntaxDefinitionGenerator {
 	// return walkTree(parser, nodes, templates);
 	// }
 
-	private StringTemplate walkTree(ContextTreeParser parser,
-			CommonTreeNodeStream nodes, StringTemplateGroup templates)
-			throws RecognitionException {
-		ContextTreeWalker walker = new ContextTreeWalker(nodes);
-		walker.setTemplateLib(templates);
-		RuleReturnScope rw = (RuleReturnScope) walker.context(parser.getShapeList(),
-				parser.getLinkList(), packageName);
-		return (StringTemplate) rw.getTemplate();
-	}
+//	private StringTemplate walkTree(ContextTreeParser parser,
+//			CommonTreeNodeStream nodes, StringTemplateGroup templates)
+//			throws RecognitionException {
+//		ContextTreeWalker walker = new ContextTreeWalker(nodes);
+//		walker.setTemplateLib(templates);
+//		RuleReturnScope rw = (RuleReturnScope) walker.context(parser.getShapeList(),
+//				parser.getLinkList(), packageName);
+//		return (StringTemplate) rw.getTemplate();
+//	}
 
 	public int getExitStatus() {
 		return this.exitStatus;

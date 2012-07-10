@@ -3,3 +3,4 @@ src/org/pathwayeditor/codegenerator/gen/
 antBuild
 treeGrammar.dot
 treeGrammar.pdf
+grammar/output

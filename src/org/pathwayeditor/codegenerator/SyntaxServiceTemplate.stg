@@ -1,0 +1,191 @@
+group Java; 
+
+syntaxServiceClass(notation_id, prop_defns, shapes, links, parenting) ::=<<
+package <notation_id.pn>;
+
+import org.pathwayeditor.businessobjects.notationsubsystem.INotationSubsystem;
+import org.pathwayeditor.businessobjects.notationsubsystem.INotationSyntaxService;
+import org.pathwayeditor.codegenerator.runtime.CommonSyntaxService;
+
+public class <notation_id.short_name>NotationSyntaxService extends CommonSyntaxService implements INotationSyntaxService {
+  private static final int ROOT_OT = 0;
+  private static final int SHAPE_BASE_IDX = 10000;
+  private static final int LINK_BASE_IDX = 20000;
+  <shapes:{s |static final int OT_<s.id> = SHAPE_BASE_IDX + <i>;};separator="\n">
+  <links:{s |static final int OT_<s.id> = LINK_BASE_IDX + <i>;};separator="\n">
+
+
+  public <notation_id.short_name>NotationSyntaxService(INotationSubsystem serviceProvider) {
+    super(serviceProvider);
+
+    IObjectTypeConstructor\<RootObjectType\> rootConstructor = new IObjectTypeConstructor\<RootObjectType\>() {
+        @Override
+        public RootObjectType create() {
+          RootObjectType retVal = new RootObjectType(ROOT_OT, SimpleNotationSyntaxService.this);
+          return retVal;
+        }
+      };
+
+    List\<IObjectTypeConstructor\<ShapeObjectType\>\> shapeConstructors = new LinkedList\<IObjectTypeConstructor\<ShapeObjectType\>\>();
+    //shapes
+    <shapes; separator="\n\n">
+    List\<IObjectTypeConstructor\<LinkObjectType\>\> linkConstructors = new LinkedList\<IObjectTypeConstructor\<LinkObjectType\>\>();
+    //links
+    <links; separator="\n\n">
+
+    super.initialise(rootConstructor, shapeConstructors, linkConstructors);		
+  }
+
+  <prop_defns; separator="\n\n">
+
+  @Override
+  protected void defineParenting() {
+    <parenting; separator="\n">
+  }
+
+  private void defineHierarchy(int parentNodeId, int ... childNodeIds){
+    ShapeObjectType srcNode = getNodeOT(parentNodeId);
+    for(int tgt : tgtNodeIds){ 
+      srcNode.getParentingRules().addChild(getNodeOT(tgt));
+    }
+  }
+
+  private void defineConnection(LinkConnectionRules connRules, int srcNodeId, int ... tgtNodeIds){
+    ShapeObjectType srcNode = getNodeOT(srcNodeId);
+    for(int tgt : tgtNodeIds){ 
+      connRules.addConnection(srcNode, getNodeOT(tgt));
+    }
+  }
+
+}
+
+>>
+
+notation_id(pn, short_name, name, description, major, minor, patch) ::= <<
+GeneralNotation("<pn>", <name>, <description>, new Version(<major>, <minor>, <patch>)); 
+>>
+
+shape(id, name, descr, fig_defn, node_size, fill_colour, font_colour, line_style, line_width, line_colour, prop_refs) ::= <<
+shapeConstructors.add(new IObjectTypeConstructor\<ShapeObjectType\>() {
+      @Override
+      public ShapeObjectType create() {
+        ShapeObjectType retVal = new ShapeObjectType(<notation_id.short_name>NotationSyntaxService.this, OT_<id>, <name>);
+        <if(descr)>
+        retVal.setDescription(<descr>);
+        <endif>
+        retVal.setEditableAttributes(EnumSet.allOf(IShapeObjectType.EditableShapeAttributes.class));
+        retVal.getDefaultAttributes().setFillColour(<fill_colour>);
+        retVal.getDefaultAttributes().setLineColour(<line_colour>);
+        retVal.getDefaultAttributes().setFontColour(<font_colour>);
+        retVal.getDefaultAttributes().setLineStyle(<line_style>);
+        retVal.getDefaultAttributes().setLineWidth(<line_width>);
+        retVal.getDefaultAttributes().setSize(<node_size>);
+        retVal.getDefaultAttributes().setShapeDefinition(<fig_defn>);
+        <prop_refs;separator=";\n">;
+        return retVal;
+      }
+    });
+>>
+
+link(id, name, descr, line_style, line_width, line_colour, ports, prop_refs, connections) ::= <<
+linkConstructors.add(new IObjectTypeConstructor\<LinkObjectType\>() {
+      @Override
+      public LinkObjectType create() {
+        LinkObjectType retVal = new LinkObjectType(<notation_id.short_name>NotationSyntaxService.this, OT_<id>, <name>);
+        <if(descr)>
+        retVal.setDescription(<descr>);
+        <endif>
+        retVal.setEditableAttributes(EnumSet.allOf(ILinkObjectType.EditableShapeAttributes.class));
+        retVal.getDefaultAttributes().setLineColour(<line_colour>);
+        retVal.getDefaultAttributes().setLineStyle(<line_style>);
+        retVal.getDefaultAttributes().setLineWidth(<line_width>);
+        
+        // define termini
+        <ports; separator="\n\n">
+        
+        // assign property definitions to the link OT
+        <prop_refs;separator=";\n">;
+        
+        // define valid link connections
+        LinkConnectionRules connRules = retVal.getLinkConnectionRules();
+        <connections; separator="\n">
+        
+        return retVal;
+      }
+    });
+>>
+
+term_map ::= [
+  "sterm":"Source",
+  "tterm":"Target"
+]
+
+
+port(type, arrow_style, gap, size) ::= <<
+retVal.get<term_map.(type)>TerminusDefinition().setEditableAttributes(EnumSet.allOf(LinkTermEditableAttributes.class));
+retVal.get<term_map.(type)>TerminusDefinition().getDefaultAttributes().setEndSize(<size>);
+retVal.get<term_map.(type)>TerminusDefinition().getDefaultAttributes().setGap(<gap>);
+retVal.get<term_map.(type)>TerminusDefinition().getDefaultAttributes().setEndDecoratorType(LinkEndDecoratorShape.<arrow_style>);
+>>
+
+node_size(w, h) ::= <<
+  new Dimension(<w>, <h>)
+>>
+
+line_style(style) ::= "LineStyle.<style>"
+
+number(val) ::="<val>"
+
+colour(hex_num) ::= <<
+  getColour(<hex_num>)
+>>
+
+string_lit(val) ::= "<val>"
+
+prop_ref(id, val) ::= "retVal.getDefaultAttributes().addPropertyDefinition(createProp<id>(<val>))"
+
+
+define_text_prop(id, name, descr, type, visualisable) ::= <<
+private IAnnotationProperty createProp<id>(String initVal){
+    PlainTextPropertyDefinition name = new PlainTextPropertyDefinition(<name>, initVal);
+    name.setDisplayName(<descr>);
+    name.setEditable(true);
+    return name;
+}
+>>
+
+define_real_prop(id, name, descr, type, visualisable) ::= <<
+private IAnnotationProperty createProp<id>(double initVal){
+    NumberPropertyDefinition name = new NumberPropertyDefinition(<name>, new BigDecimal(initVal));
+    name.setDisplayName(<descr>);
+    name.setEditable(true);
+    return name;
+}
+>>
+
+define_int_prop(id, name, descr, type, visualisable) ::= <<
+private IAnnotationProperty createProp<id>(int initVal){
+    IntegerPropertyDefinition name = new IntegerPropertyDefinition(<name>, initVal);
+    name.setDisplayName(<descr>);
+    name.setEditable(true);
+    return name;
+}
+>>
+
+define_bool_prop(id, name, descr, type, visualisable) ::= <<
+private IAnnotationProperty createProp<id>(boolean initVal){
+    BooleanPropertyDefinition name = new BooleanPropertyDefinition(<name>, initVal);
+    name.setDisplayName(<descr>);
+    name.setEditable(true);
+    return name;
+}
+>>
+
+
+define_connection(src, tgts) ::= <<
+defineConnection(connRules, OT_<src>, OT_<tgts; separator=", OT_">); 
+>>
+
+define_hierarchy(parent, children) ::= <<
+defineHierarchy(OT_<parent>, OT_<children; separator=", OT_">);
+>>

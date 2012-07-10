@@ -1,4 +1,4 @@
-group Java implements ContextTreeTemplate; 
+group Java; 
 
 contexClass(id,pack,pn,name,desc,ver, rmo,slist,llist,prop,sh,li) ::=<<
 ###<id>NotationSyntaxService.java

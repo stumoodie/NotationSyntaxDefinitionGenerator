@@ -1,144 +1,139 @@
 <project name="CodeGenerator" default="all" basedir=".">
-    <description>
+	<description>
         Context adapter class generation project
     </description>
-    
-    <!-- program version -->
-    <property name="version" value="0.9.00" />
-    
-    <!-- set global properties for this build -->
-    <property name="build.root" location="antBuild"/>
-    <property name="build.bin" location="${build.root}/bin"/>
-    <property name="build.test" location="${build.root}/test"/>
-    <property name="core.src" location="src"/>
-    <property name="core.test" location="test"/>
-    <property name="parser.output" location="${core.src}/org/pathwayeditor/codegenerator/gen"/>
-    <property name="dist" location="${build.root}/dist" />
-    <property name="dist.jar" location="${dist}/jar" />
-    <property name="docbase.dir" location="${build.root}/docs"/>
-    <property name="doc" location="${docbase.dir}/api"/>
-    <property name="lib.dir" location="libs"/>
-    <property name="grammar" location="grammar"/>
-    <property name="jar.name" location="${dist.jar}/${ant.project.name}.jar"/>
-    <property name="grammar.path" location="grammar"/>
-    <property name="grammar.file" value="${grammar.path}/ContextTree.g"/>
-    <property name="walker.file" value="${grammar.path}/ContextTreeWalker.g"/>
-    <property name="ca.file" value="metabolic.ca"/>
-    <property name="package" value="org/pathwayeditor/codegenerator"/>
-    <property name="test.package" value="org/pathwayeditor/codegenerator/test"/>
-    <property name="main.class" value="org.pathwayeditor.codegenerator.SyntaxDefinitionGenerator"/>
-    <property name="test.package.dir" value="${test}/${test.package}" />
-    <property name="test.defn.file" value="test.ca" />
-	
-    <!-- where to write/find token files -->
-    <property name="token.lib" location="${src}/${package}" />
 
-    <!-- antlr options -->
-    <property name="profile" value="false" />
-    <property name="report" value="true" />
-    <property name="multithreaded" value="true" />
-    <property name="depend" value="true" />
-	<property name="antlr" value="${lib.dir}/antlr/lib"/>
+	<!-- program version -->
+	<property name="version" value="0.9.00" />
+
+	<!-- set global properties for this build -->
+	<property name="build.root" location="antBuild" />
+	<property name="build.bin" location="${build.root}/bin" />
+	<property name="build.test" location="${build.root}/test" />
+	<property name="core.src" location="src" />
+	<property name="core.test" location="test" />
+	<property name="parser.output" location="${core.src}/org/pathwayeditor/codegenerator/gen" />
+	<property name="dist" location="${build.root}/dist" />
+	<property name="dist.jar" location="${dist}/jar" />
+	<property name="docbase.dir" location="${build.root}/docs" />
+	<property name="doc" location="${docbase.dir}/api" />
+	<property name="lib.dir" location="libs" />
+	<property name="grammar" location="grammar" />
+	<property name="jar.name" location="${dist.jar}/${ant.project.name}.jar" />
+	<property name="grammar.path" location="grammar" />
+	<property name="grammar.file" value="${grammar.path}/ContextTree.g" />
+	<property name="walker.file" value="${grammar.path}/ContextTreeWalker.g" />
+	<property name="ca.file" value="metabolic.ca" />
+	<property name="package" value="org/pathwayeditor/codegenerator" />
+	<property name="test.package" value="org/pathwayeditor/codegenerator/test" />
+	<property name="main.class" value="org.pathwayeditor.codegenerator.SyntaxDefinitionGenerator" />
+	<property name="test.package.dir" value="${test}/${test.package}" />
+	<property name="test.defn.file" value="test.ca" />
+
+	<!-- where to write/find token files -->
+	<property name="token.lib" location="${src}/${package}" />
+
+	<!-- antlr options -->
+	<property name="profile" value="false" />
+	<property name="report" value="true" />
+	<property name="multithreaded" value="true" />
+	<property name="depend" value="true" />
+	<property name="antlr" value="${lib.dir}/antlr/lib" />
 
 	<path id="buildclasspath">
-	  <pathelement location="${lib.dir}/antlr-3.4/lib/antlr-3.4-complete.jar"/>
-	  <pathelement location="${lib.dir}/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" />
+		<pathelement location="${lib.dir}/antlr-3.4/lib/antlr-3.4-complete.jar" />
+		<pathelement location="${lib.dir}/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" />
 	</path>
-	
+
 	<path id="test.classpath">
-	  <path refid="buildclasspath" />
-	  <pathelement location="${lib.dir}/easymock2.4/easymock.jar"/>
-	  <pathelement location="${lib.dir}/junit4.10/junit-4.10.jar"/>
-	  <pathelement location="${lib.dir}/ToolKit/toolkit.jar"/>
-	  <pathelement location="${lib.dir}/BusinessObjects/BusinessObjects.jar"/>
+		<path refid="buildclasspath" />
+		<pathelement location="${lib.dir}/easymock2.4/easymock.jar" />
+		<pathelement location="${lib.dir}/junit4.10/junit-4.10.jar" />
+                <pathelement location="${lib.dir}/ToolKit/NotationSubsystemUtils.jar"/>
+                <pathelement location="${lib.dir}/VisualLanguageToolkit/VisualLanguageToolkit.jar"/>
 	</path>
 
-    <target name="init">
-      <mkdir dir="${build.root}"/>
-      <mkdir dir="${build.bin}"/>
-    </target>
+	<target name="init">
+		<mkdir dir="${build.root}" />
+		<mkdir dir="${build.bin}" />
+	</target>
 
-    <macrodef name="antlr3">
-                <attribute name="target"/>
-                <attribute name="output"/>
-                <attribute name="debug" default="false"/>
-                <sequential>
-                <antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr"
-            target="@{target}"
-                        outputdirectory="@{output}"
-                        libdirectory="@{output}"
-            multithreaded="false"
-                        debug="@{debug}"
-                        report="true">
-                        <classpath>
-                                <pathelement location="${lib.dir}/antlr-3.4/lib/antlr-3.4-complete.jar" />
-                        </classpath>
-        </antlr:antlr3>
-                </sequential>
-    </macrodef>
-    
-        <target name="grammar-init">
-                <mkdir dir="${parser.output}"/>
-        </target>
+	<macrodef name="antlr3">
+		<attribute name="target" />
+		<attribute name="output" />
+		<attribute name="debug" default="false" />
+		<sequential>
+			<antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr" target="@{target}" outputdirectory="@{output}" libdirectory="@{output}" multithreaded="false" debug="@{debug}" report="true">
+				<classpath>
+					<pathelement location="${lib.dir}/antlr-3.4/lib/antlr-3.4-complete.jar" />
+				</classpath>
+			</antlr:antlr3>
+		</sequential>
+	</macrodef>
 
-    <target name="grammar" depends="grammar-init">
-       <antlr3 target="${grammar.file}" output="${parser.output}"/>
-    </target>
-    
-    <target name="walker" depends="grammar-init">
-       <antlr3 target="${walker.file}" output="${parser.output}"/>
-    </target>
+	<target name="grammar-init">
+		<mkdir dir="${parser.output}" />
+	</target>
+
+	<target name="grammar" depends="grammar-init">
+		<antlr3 target="${grammar.file}" output="${parser.output}" />
+	</target>
+
+	<target name="walker" depends="grammar-init">
+		<antlr3 target="${walker.file}" output="${parser.output}" debug="false"/>
+	</target>
 
 
-    <target name="compile" depends="grammar,walker,init" description="compile">
-        <!-- Compile the java code from ${src} into ${classes} -->
-        <javac debug="true" srcdir="${core.src}" destdir="${build.bin}" includeantruntime="false"
-               listfiles="yes" deprecation="yes" excludes="**/*SyntaxService.java" verbose="false" >
-             <classpath refid="buildclasspath"/>
-        </javac>
+	<target name="compile" depends="grammar,walker,init" description="compile">
+		<!-- Compile the java code from ${src} into ${classes} -->
+		<javac debug="true" srcdir="${core.src}" destdir="${build.bin}" includeantruntime="false" listfiles="yes" deprecation="yes" verbose="false"
+			excludes="org/pathwayeditor/codegenerator/runtime/*,org/pathwayeditor/codegenerator/gen/*SyntaxService.java" >
+			<classpath refid="buildclasspath" />
+		</javac>
 		<copy todir="${build.bin}">
 			<fileset dir="${core.src}">
 				<exclude name="**/*.java" />
 				<exclude name="**/*.class" />
 			</fileset>
 		</copy>
-    </target>
+	</target>
 
-   <target name="run_parser" depends="compile">
-        <java classname="org.pathwayeditor.codegenerator.SyntaxDefinitionGenerator" fork="true"
-           maxmemory="256m" failonerror="true" classpathref="buildclasspath">
-           <classpath>
-             <pathelement location="${build.bin}"/>
-             <pathelement location="."/>
-          </classpath>
-          <arg value="-p" />
-          <arg value="org.pathwayeditor" />
-          <arg value="simple_eg.ns" />
-        </java>
-   </target>
+	<target name="run_parser" depends="compile">
+		<java classname="org.pathwayeditor.codegenerator.SyntaxDefinitionGenerator" fork="true" maxmemory="256m" failonerror="true" classpathref="buildclasspath">
+			<classpath>
+		                <pathelement location="${lib.dir}/ToolKit/NotationSubsystemUtils.jar"/>
+		                <pathelement location="${lib.dir}/VisualLanguageToolkit/VisualLanguageToolkit.jar"/>
+				<pathelement location="${build.bin}" />
+				<pathelement location="." />
+			</classpath>
+			<arg value="-p" />
+			<arg value="org.pathwayeditor" />
+			<arg value="simple_eg.ns" />
+		</java>
+	</target>
 
-   <target name="dot2pdf" description="Creates pdf file from AST dot file." depends="">
-     <exec executable="dot" searchpath="true" spawn="true">
-       <arg value="-Tpdf"/>
-       <arg value="-o"/>
-       <arg value="treeGrammar.pdf"/>
-       <arg value="treeGrammar.dot"/>
-     </exec>
-   </target>
+	<target name="dot2pdf" description="Creates pdf file from AST dot file." depends="">
+		<exec executable="dot" searchpath="true" spawn="true">
+			<arg value="-Tpdf" />
+			<arg value="-o" />
+			<arg value="treeGrammar.pdf" />
+			<arg value="treeGrammar.dot" />
+		</exec>
+	</target>
 
-        	<target name="dist" depends="compile,init" description="generate for distribution">
-    	<mkdir dir="${dist.jar}" />
-        <jar destfile="${jar.name}" filesetmanifest="mergewithoutmain">
-                <manifest>
-                        <attribute name="Built-By" value="${user.name}"/>
-                        <attribute name="Main-Class" value="${main.class}" />
-                        <attribute name="Class-Path" value=".:org/pathwayeditor/codegenerator" />
-                </manifest>
-                <fileset dir="${build.bin}" />
-        	<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/antlr-3.4/lib/antlr-3.4-complete.jar" />
-	    	<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" />
-        </jar>
-    </target>
+	<target name="dist" depends="compile,init" description="generate for distribution">
+		<mkdir dir="${dist.jar}" />
+		<jar destfile="${jar.name}" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Main-Class" value="${main.class}" />
+				<attribute name="Class-Path" value=".:org/pathwayeditor/codegenerator" />
+			</manifest>
+			<fileset dir="${build.bin}" />
+			<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/antlr-3.4/lib/antlr-3.4-complete.jar" />
+			<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" />
+		</jar>
+	</target>
 
 	<target name="test-class" depends="dist" description="creates the test class for unit testing">
 		<java jar="${jar.name}" fork="true" maxmemory="256m">
@@ -147,17 +142,16 @@
 			<arg file="${test.defn.file}" />
 		</java>
 	</target>
-	
-    <target name="compile-test" depends="compile,test-class" description="compile">
-        <!-- Compile the java code from ${src} into ${build.bin} -->
-        <javac debug="true" srcdir="${core.test}" destdir="${build.test}"             
-               listfiles="yes" deprecation="yes" includeantruntime="false">
-        	<classpath refid="test.classpath"/>
-        </javac>
-        <copy todir="${build.test}">
-                <fileset dir="${core.test}" includes="*.xml"/>
-        </copy>
-    </target>
+
+	<target name="compile-test" depends="compile,test-class" description="compile">
+		<!-- Compile the java code from ${src} into ${build.bin} -->
+		<javac debug="true" srcdir="${core.test}" destdir="${build.test}" listfiles="yes" deprecation="yes" includeantruntime="false">
+			<classpath refid="test.classpath" />
+		</javac>
+		<copy todir="${build.test}">
+			<fileset dir="${core.test}" includes="*.xml" />
+		</copy>
+	</target>
 
 	<target name="test" depends="compile-test">
 		<delete dir="${dist}/test/logs" />
@@ -186,27 +180,25 @@
 		</junitreport>
 	</target>
 
-    <target name="doc" description="generate documentation">
-       <javadoc destdir="${doc}"
-                author="true"
-                version="true"
-                use="true"
-                windowtitle="${ant.project.name}"
-                sourcepath="${core.src}"
-                linksource="yes"
-                breakiterator="yes">
-       	<classpath refid="buildclasspath" />
-       </javadoc>
-    </target>
+	<target name="doc" description="generate documentation">
+		<javadoc destdir="${doc}" author="true" version="true" use="true" windowtitle="${ant.project.name}" sourcepath="${core.src}" linksource="yes" breakiterator="yes">
+		  <fileset dir="${core.src}">
+	            <include name="org/pathwayeditor/codegenerator/**"/>
+	            <exclude name="org/pathwayeditor/codegenerator/runtime/*"/>
+		    <!--excludesfile name="org/pathwayeditor/codegenerator/runtime/*,org/pathwayeditor/codegenerator/gen/*SyntaxService.java"/-->
+		  </fileset>
+		<classpath refid="buildclasspath" />
+		</javadoc>
+	</target>
 
-    <target name="clean-grammar">
-      <delete verbose="true" dir="${parser.output}"/>
-    </target>
+	<target name="clean-grammar">
+		<delete verbose="true" dir="${parser.output}" />
+	</target>
 
-    <target name="clean" depends="clean-grammar" description="Cleans up build files and generated src files">
-      <delete dir="${build.root}"/>
-    </target>
-    
-    <target name="all" depends="dist, doc" description="create a distribution and javadocs"/>
-            
+	<target name="clean" depends="clean-grammar" description="Cleans up build files and generated src files">
+		<delete dir="${build.root}" />
+	</target>
+
+	<target name="all" depends="dist, doc" description="create a distribution and javadocs" />
+
 </project>

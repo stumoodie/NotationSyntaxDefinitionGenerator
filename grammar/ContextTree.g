@@ -24,11 +24,11 @@ package org.pathwayeditor.codegenerator.gen;
 @members{
 	}
 
-notation_spec :	notation_id properties+ rmo shape+ anchor_node* links* parenting_defn* EOF
-	 -> ^(notation_id properties+ rmo shape+ anchor_node* links* parenting_defn*)
+notation_spec :	notation_id properties* rmo shape+ anchor_node* links* parenting_defn* EOF
+	 -> notation_id properties* rmo shape+ anchor_node* links* parenting_defn*
 	;
 
-notation_id returns[String id]
+notation_id
 	:	NOTATION PACKAGE_NAME  '(' name description version ')'
 		 -> ^(NOTATION  PACKAGE_NAME  name description version)
 	;

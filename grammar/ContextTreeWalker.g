@@ -17,25 +17,38 @@ import java.util.regex.Pattern;
 
 }
 
+@members{
+  private String qualifiedName;
+
+
+  public String getQualifiedName(){
+    return this.qualifiedName;
+  }
+}
+
 notation_spec
 	:	n=notation_id p+=properties* ROOT s+=shape+ anchor_node* l+=links* h+=parenting_defn*
 	-> syntaxServiceClass(notation_id={$n.st}, prop_defns={$p}, shapes={$s}, links={$l}, parenting={$h})
 	;
 	
-notation_id returns[String major, String minor, String patch, String shortName]
+notation_id returns[String major, String minor, String patch, String shortName, String packageName]
+@after{
+  this.qualifiedName = $p.text;
+}
 	:	^(NOTATION  p=PACKAGE_NAME  ^(NAME n=TEXT) ^(DESCR d=TEXT) v=VERSION_NUM)
 	{
 	  Scanner s = new Scanner($v.text).useDelimiter("\\.");
 	  $major = s.next();
 	  $minor = s.next();
 	  $patch = s.next();
-	  Pattern pat = Pattern.compile(".*\\b(\\w+)$");
+	  Pattern pat = Pattern.compile("(?:(.*)\\b\\.)?\\b(\\w+)$");
 	  Matcher mat = pat.matcher($p.text);
 	  if(mat.matches()){
-	    $shortName = mat.group(1);
+	    $packageName = mat.group(1);
+	    $shortName = mat.group(2);
 	  }
 	 }
-	-> notation_id(pn={$p.text}, short_name={$shortName}, name={$n.text}, description={$d.text}, major={$major}, minor={$minor}, patch={$patch})
+	-> notation_id(pn={$packageName}, qn={$p.text}, short_name={$shortName}, name={$n.text}, description={$d.text}, major={$major}, minor={$minor}, patch={$patch})
 	;
 	
 properties

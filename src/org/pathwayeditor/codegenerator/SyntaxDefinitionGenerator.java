@@ -34,7 +34,6 @@ import org.antlr.stringtemplate.StringTemplateWriter;
 import org.pathwayeditor.codegenerator.gen.ContextTreeLexer;
 import org.pathwayeditor.codegenerator.gen.ContextTreeParser;
 import org.pathwayeditor.codegenerator.gen.ContextTreeWalker;
-import org.pathwayeditor.codegenerator.tools.FolderSplitWriter;
 
 public class SyntaxDefinitionGenerator {
 //	private static final String SYNTAX_DEFN_TEMPLATE = "org.pathwayeditor.codegenerator.Java.stg";
@@ -43,25 +42,27 @@ public class SyntaxDefinitionGenerator {
 	private static int FAIL = 1;
 
 	private File fileName = null;
-	private String packageName;
+//	private String packageName;
+	private String qualifiedName;
 	private File target = new File(".");
 	private final OptionParser cmdLineParser = new OptionParser();
 	// private final OptionSpec<File> fileNameOption;
 	private final OptionSpec<File> targetDirOption;
-	private final OptionSpec<String> packageNameOption;
+//	private final OptionSpec<String> packageNameOption;
 	private final OptionSpec<Void> helpOption;
 	private int exitStatus = FAIL;
 	private boolean areParamatersValid;
 	private static final String USAGE = "program <options> <spec file>";
 	private static final int EXPECTED_NUM_SPEC_FILES = 1;
-	private static final Pattern VALID_PACKAGE_REGEX = Pattern
-			.compile("\\w((\\.|\\w)*\\w)?");
+//	private static final Pattern VALID_PACKAGE_REGEX = Pattern
+//			.compile("\\w((\\.|\\w)*\\w)?");
 	private static final List<String> TARGET_DIR_OPTIONS = Arrays.asList("t", "targetDir");
-	private static final List<String> PACKAGE_OPTIONS = Arrays.asList("p", "package");
+//	private static final List<String> PACKAGE_OPTIONS = Arrays.asList("p", "package");
 	private static final List<String> HELP_OPTIONS = Arrays.asList("?", "h", "help");
 	private CommonTokenStream tokens;
 	private ContextTreeParser parser;
 	private CommonTreeNodeStream nodes;
+//	private String className;
 
 	public SyntaxDefinitionGenerator() {
 		// this.fileNameOption = cmdLineParser.accepts("f",
@@ -69,8 +70,8 @@ public class SyntaxDefinitionGenerator {
 		this.cmdLineParser.posixlyCorrect(true);
 		this.targetDirOption = cmdLineParser.acceptsAll(TARGET_DIR_OPTIONS, "The target directory").withRequiredArg().ofType(File.class)
 				.describedAs("directory name");
-		this.packageNameOption = this.cmdLineParser.acceptsAll(PACKAGE_OPTIONS, "The package name for the new Context Adapter")
-				.withRequiredArg().ofType(String.class).describedAs("package name");
+//		this.packageNameOption = this.cmdLineParser.acceptsAll(PACKAGE_OPTIONS, "The package name for the new Context Adapter")
+//				.withRequiredArg().ofType(String.class).describedAs("package name");
 		this.helpOption = this.cmdLineParser.acceptsAll(HELP_OPTIONS, "Display command line usage");
 	}
 
@@ -104,9 +105,9 @@ public class SyntaxDefinitionGenerator {
 				}
 			} else if (options.nonOptionArguments().size() == EXPECTED_NUM_SPEC_FILES) {
 				this.fileName = new File(options.nonOptionArguments().get(0));
-				if (options.has(this.packageNameOption)) {
-					this.packageName = options.valueOf(this.packageNameOption);
-				}
+//				if (options.has(this.packageNameOption)) {
+//					this.packageName = options.valueOf(this.packageNameOption);
+//				}
 				if (options.has(this.targetDirOption)) {
 					this.target = options.valueOf(this.targetDirOption);
 				}
@@ -131,12 +132,12 @@ public class SyntaxDefinitionGenerator {
 					+ " is not a directory or cannot be written to");
 			this.setParamatersValid(false);
 		}
-		if (this.packageName != null
-				&& !VALID_PACKAGE_REGEX.matcher(packageName).matches()) {
-			System.err.println(this.packageName
-					+ " is not a valid java package name");
-			this.setParamatersValid(false);
-		}
+//		if (this.packageName != null
+//				&& !VALID_PACKAGE_REGEX.matcher(packageName).matches()) {
+//			System.err.println(this.packageName
+//					+ " is not a valid java package name");
+//			this.setParamatersValid(false);
+//		}
 	}
 
 	private void setParamatersValid(boolean areParamatersValid) {
@@ -232,8 +233,14 @@ public class SyntaxDefinitionGenerator {
 //		dstChannel.close();
 //	}
 
-	private void sendOut(String prefix,	StringTemplate stj) throws IOException {
-		Writer w = new FileWriter(new File("src/org/pathwayeditor/codegenerator/gen/SimpleNotationSyntaxService.java"));
+	private void sendOut(String prefix, StringTemplate stj) throws IOException {
+		StringBuilder buf = new StringBuilder(prefix);
+		buf.append("/");
+		buf.append(this.qualifiedName.replace('.', '/'));
+		buf.append("NotationSyntaxService.java");
+		File outFile = new File(buf.toString());
+//		Writer w = new FileWriter(new File("src/org/pathwayeditor/codegenerator/gen/SimpleNotationSyntaxService.java"));
+		Writer w = new FileWriter(outFile);
 		StringTemplateWriter wr = new AutoIndentWriter(w);
 		stj.write(wr);
 		w.close();
@@ -287,6 +294,7 @@ public class SyntaxDefinitionGenerator {
 		walker.setTemplateLib(templates);
 		ContextTreeWalker.notation_spec_return walkerRet = walker.notation_spec();
 		
+		this.qualifiedName = walker.getQualifiedName();
 		return (StringTemplate)walkerRet.getTemplate();
 //		RuleReturnScope rw = (RuleReturnScope) walker.notation_spec();
 //		return (StringTemplate) rw.getTemplate();

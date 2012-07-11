@@ -7,7 +7,7 @@
 <listEntry value="1"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.pathwayeditor.codegenerator.SyntaxDefinitionGenerator"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-p org.pathwayeditoer ${project_loc:NotationSyntaxDefinitionGenerator}/simple_eg.ns"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-t test ${project_loc:NotationSyntaxDefinitionGenerator}/simple_eg.ns"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="NotationSyntaxDefinitionGenerator"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx256m"/>
 </launchConfiguration>

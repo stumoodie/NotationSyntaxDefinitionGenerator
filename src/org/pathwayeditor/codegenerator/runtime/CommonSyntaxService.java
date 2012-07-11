@@ -50,14 +50,16 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 		hex = hex.replace("#", "");
 		int r = Integer.parseInt(hex.substring(0, 2), 16);
 		int g = Integer.parseInt(hex.substring(2, 4), 16);
-		int b = Integer.parseInt(hex.substring(4), 16);
-		int a = Integer.parseInt(hex.substring(4), 16);
+		int b = Integer.parseInt(hex.substring(4, 6), 16);
+		int a = Integer.parseInt(hex.substring(6), 16);
 		return new Colour(r, g, b, a);
 	}
 
 	protected abstract void defineParenting();
 	
-	protected abstract void defineConnections();
+//	protected INodeObjectType getNodeOT(int uniqueId){
+//		return (ShapeObjectType)this.shapeOts.get(uniqueId);
+//	}
 	
 	protected final void initialise(IObjectTypeConstructor<RootObjectType> rootConstructor, List<IObjectTypeConstructor<ShapeObjectType>> shapeConstructors, List<IObjectTypeConstructor<LinkObjectType>> linkConstructors){
 		this.rootObjectType = rootConstructor.create();
@@ -67,7 +69,6 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 		for(IObjectTypeConstructor<LinkObjectType> linkConstr : linkConstructors){
 			assignObjectType(this.linkOts, linkConstr.create());
 		}
-		defineConnections();
 		defineParenting();
 	}
 	
@@ -260,6 +261,11 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 		return findObjectTypeByName(this.linkOts.values(), name);
 	}
 
+	@SuppressWarnings("unchecked")
+	protected <T extends IObjectType> T getOT(int uniqueId){
+		return (T)getObjectType(uniqueId);
+	}
+	
 //	@Override
 //	public IShapeObjectType getLinkEndObjectType(ILinkObjectType linkOt) {
 //		return this.linkEndObjectTypes.get(linkOt);

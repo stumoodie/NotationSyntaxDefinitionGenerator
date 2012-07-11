@@ -3,9 +3,32 @@ group Java;
 syntaxServiceClass(notation_id, prop_defns, shapes, links, parenting) ::=<<
 package <notation_id.pn>;
 
+import java.math.BigDecimal;
+import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.pathwayeditor.businessobjects.drawingprimitives.attributes.LineStyle;
+import org.pathwayeditor.businessobjects.drawingprimitives.attributes.LinkEndDecoratorShape;
+import org.pathwayeditor.businessobjects.drawingprimitives.properties.IPropertyDefinition;
 import org.pathwayeditor.businessobjects.notationsubsystem.INotationSubsystem;
 import org.pathwayeditor.businessobjects.notationsubsystem.INotationSyntaxService;
+import org.pathwayeditor.businessobjects.typedefn.ILinkObjectType.LinkEditableAttributes;
+import org.pathwayeditor.businessobjects.typedefn.ILinkTerminusDefinition.LinkTermEditableAttributes;
+import org.pathwayeditor.businessobjects.typedefn.INodeObjectType;
+import org.pathwayeditor.businessobjects.typedefn.IObjectType;
+import org.pathwayeditor.businessobjects.typedefn.IShapeObjectType;
 import org.pathwayeditor.codegenerator.runtime.CommonSyntaxService;
+import org.pathwayeditor.codegenerator.runtime.IObjectTypeConstructor;
+import org.pathwayeditor.figure.geometry.Dimension;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.IntegerPropertyDefinition;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.LinkConnectionRules;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.LinkObjectType;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.NumberPropertyDefinition;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.ObjectTypeParentingRules;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.PlainTextPropertyDefinition;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.RootObjectType;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.ShapeObjectType;
 
 public class <notation_id.short_name>NotationSyntaxService extends CommonSyntaxService implements INotationSyntaxService {
   private static final int ROOT_OT = 0;
@@ -44,16 +67,18 @@ public class <notation_id.short_name>NotationSyntaxService extends CommonSyntaxS
   }
 
   private void defineHierarchy(int parentNodeId, int ... childNodeIds){
-    ShapeObjectType srcNode = getNodeOT(parentNodeId);
-    for(int tgt : tgtNodeIds){ 
-      srcNode.getParentingRules().addChild(getNodeOT(tgt));
+    IObjectType srcNode = getObjectType(parentNodeId);
+    ObjectTypeParentingRules rules = (ObjectTypeParentingRules)srcNode.getParentingRules();
+    for(int childId : childNodeIds){ 
+      rules.addChild(getObjectType(childId));
     }
   }
 
   private void defineConnection(LinkConnectionRules connRules, int srcNodeId, int ... tgtNodeIds){
-    ShapeObjectType srcNode = getNodeOT(srcNodeId);
+    INodeObjectType srcNode = (INodeObjectType)getObjectType(srcNodeId);
     for(int tgt : tgtNodeIds){ 
-      connRules.addConnection(srcNode, getNodeOT(tgt));
+	  INodeObjectType tgtNode = (INodeObjectType)getObjectType(tgt);
+      connRules.addConnection(srcNode, tgtNode);
     }
   }
 
@@ -61,8 +86,8 @@ public class <notation_id.short_name>NotationSyntaxService extends CommonSyntaxS
 
 >>
 
-notation_id(pn, short_name, name, description, major, minor, patch) ::= <<
-GeneralNotation("<pn>", <name>, <description>, new Version(<major>, <minor>, <patch>)); 
+notation_id(pn, qn, short_name, name, description, major, minor, patch) ::= <<
+GeneralNotation("<qn>", <name>, <description>, new Version(<major>, <minor>, <patch>)); 
 >>
 
 shape(id, name, descr, fig_defn, node_size, fill_colour, font_colour, line_style, line_width, line_colour, prop_refs) ::= <<
@@ -76,7 +101,7 @@ shapeConstructors.add(new IObjectTypeConstructor\<ShapeObjectType\>() {
         retVal.setEditableAttributes(EnumSet.allOf(IShapeObjectType.EditableShapeAttributes.class));
         retVal.getDefaultAttributes().setFillColour(<fill_colour>);
         retVal.getDefaultAttributes().setLineColour(<line_colour>);
-        retVal.getDefaultAttributes().setFontColour(<font_colour>);
+        retVal.getDefaultAttributes().setFontColour(<line_colour>);
         retVal.getDefaultAttributes().setLineStyle(<line_style>);
         retVal.getDefaultAttributes().setLineWidth(<line_width>);
         retVal.getDefaultAttributes().setSize(<node_size>);
@@ -95,7 +120,7 @@ linkConstructors.add(new IObjectTypeConstructor\<LinkObjectType\>() {
         <if(descr)>
         retVal.setDescription(<descr>);
         <endif>
-        retVal.setEditableAttributes(EnumSet.allOf(ILinkObjectType.EditableShapeAttributes.class));
+        retVal.setEditableAttributes(EnumSet.allOf(LinkEditableAttributes.class));
         retVal.getDefaultAttributes().setLineColour(<line_colour>);
         retVal.getDefaultAttributes().setLineStyle(<line_style>);
         retVal.getDefaultAttributes().setLineWidth(<line_width>);
@@ -137,7 +162,7 @@ line_style(style) ::= "LineStyle.<style>"
 number(val) ::="<val>"
 
 colour(hex_num) ::= <<
-  getColour(<hex_num>)
+getColour("<hex_num>")
 >>
 
 string_lit(val) ::= "<val>"
@@ -146,7 +171,7 @@ prop_ref(id, val) ::= "retVal.getDefaultAttributes().addPropertyDefinition(creat
 
 
 define_text_prop(id, name, descr, type, visualisable) ::= <<
-private IAnnotationProperty createProp<id>(String initVal){
+private IPropertyDefinition createProp<id>(String initVal){
     PlainTextPropertyDefinition name = new PlainTextPropertyDefinition(<name>, initVal);
     name.setDisplayName(<descr>);
     name.setEditable(true);
@@ -155,7 +180,7 @@ private IAnnotationProperty createProp<id>(String initVal){
 >>
 
 define_real_prop(id, name, descr, type, visualisable) ::= <<
-private IAnnotationProperty createProp<id>(double initVal){
+private IPropertyDefinition createProp<id>(double initVal){
     NumberPropertyDefinition name = new NumberPropertyDefinition(<name>, new BigDecimal(initVal));
     name.setDisplayName(<descr>);
     name.setEditable(true);
@@ -164,7 +189,7 @@ private IAnnotationProperty createProp<id>(double initVal){
 >>
 
 define_int_prop(id, name, descr, type, visualisable) ::= <<
-private IAnnotationProperty createProp<id>(int initVal){
+private IPropertyDefinition createProp<id>(int initVal){
     IntegerPropertyDefinition name = new IntegerPropertyDefinition(<name>, initVal);
     name.setDisplayName(<descr>);
     name.setEditable(true);
@@ -173,7 +198,7 @@ private IAnnotationProperty createProp<id>(int initVal){
 >>
 
 define_bool_prop(id, name, descr, type, visualisable) ::= <<
-private IAnnotationProperty createProp<id>(boolean initVal){
+private IPropertyDefinition createProp<id>(boolean initVal){
     BooleanPropertyDefinition name = new BooleanPropertyDefinition(<name>, initVal);
     name.setDisplayName(<descr>);
     name.setEditable(true);

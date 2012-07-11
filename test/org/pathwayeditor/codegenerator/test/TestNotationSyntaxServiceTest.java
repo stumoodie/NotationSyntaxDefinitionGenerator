@@ -15,12 +15,9 @@ import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.pathwayeditor.businessobjects.drawingprimitives.attributes.ConnectionRouter;
 import org.pathwayeditor.businessobjects.drawingprimitives.attributes.LineStyle;
 import org.pathwayeditor.businessobjects.drawingprimitives.attributes.LinkEndDecoratorShape;
-import org.pathwayeditor.businessobjects.drawingprimitives.attributes.PrimitiveShapeType;
 import org.pathwayeditor.businessobjects.drawingprimitives.attributes.RGB;
-import org.pathwayeditor.businessobjects.drawingprimitives.attributes.Size;
 import org.pathwayeditor.businessobjects.drawingprimitives.attributes.Version;
 import org.pathwayeditor.businessobjects.drawingprimitives.properties.IPropertyDefinition;
 import org.pathwayeditor.businessobjects.notationsubsystem.INotation;
@@ -30,8 +27,10 @@ import org.pathwayeditor.businessobjects.typedefn.ILabelAttributeDefaults;
 import org.pathwayeditor.businessobjects.typedefn.ILinkAttributeDefaults;
 import org.pathwayeditor.businessobjects.typedefn.ILinkConnectionRules;
 import org.pathwayeditor.businessobjects.typedefn.ILinkObjectType;
+import org.pathwayeditor.businessobjects.typedefn.ILinkObjectType.LinkEditableAttributes;
 import org.pathwayeditor.businessobjects.typedefn.ILinkTerminusDefaults;
 import org.pathwayeditor.businessobjects.typedefn.ILinkTerminusDefinition;
+import org.pathwayeditor.businessobjects.typedefn.ILinkTerminusDefinition.LinkTermEditableAttributes;
 import org.pathwayeditor.businessobjects.typedefn.IObjectType;
 import org.pathwayeditor.businessobjects.typedefn.IObjectTypeParentingRules;
 import org.pathwayeditor.businessobjects.typedefn.IPropertyDefinitionContainer;
@@ -39,10 +38,9 @@ import org.pathwayeditor.businessobjects.typedefn.IRootObjectParentingRules;
 import org.pathwayeditor.businessobjects.typedefn.IRootObjectType;
 import org.pathwayeditor.businessobjects.typedefn.IShapeAttributeDefaults;
 import org.pathwayeditor.businessobjects.typedefn.IShapeObjectType;
-import org.pathwayeditor.businessobjects.typedefn.IShapeParentingRules;
-import org.pathwayeditor.businessobjects.typedefn.ILinkObjectType.LinkEditableAttributes;
-import org.pathwayeditor.businessobjects.typedefn.ILinkTerminusDefinition.LinkTermEditableAttributes;
 import org.pathwayeditor.businessobjects.typedefn.IShapeObjectType.EditableShapeAttributes;
+import org.pathwayeditor.codegenerator.SimpleNotationSyntaxService;
+import org.pathwayeditor.figure.geometry.Dimension;
 
 public class TestNotationSyntaxServiceTest {
 	private enum ExpectedTypes { TYPE_NAME, TYPE_DESCRIPTION, TYPE_EDITABLE, DEFAULT_SHAPE_TYPE, DEFAULT_NAME, DEFAULT_DESCN, DEFAULT_DETAILED_DESCN, DEFAULT_FILL_COLOUR,
@@ -54,8 +52,8 @@ public class TestNotationSyntaxServiceTest {
 	private static final String EXPECTED_NOTATION_DESCN = "Test Notation";
 	private static final String EXPECTED_NOTATION_QUALIFIED_NAME = "org.pathwayeditor.codegenerator.Test";
 	private static final Version EXPECTED_NOTATION_VERSION = new Version(1, 2, 0);
-	private static final int EXPECTED_NUM_SHAPE_TYPES = 4;
-	private static final int EXPECTED_NUM_LINK_TYPES = 5;
+	private static final int EXPECTED_NUM_SHAPE_TYPES = 2;
+	private static final int EXPECTED_NUM_LINK_TYPES = 1;
 	private INotationSyntaxService testInstance;
 	private INotationSubsystem mockSubsystem;
 	private INotation mockNotation;
@@ -76,7 +74,7 @@ public class TestNotationSyntaxServiceTest {
 		EasyMock.expectLastCall().anyTimes();
 		EasyMock.replay(this.mockNotation);
 		EasyMock.replay(this.mockSubsystem);
-		this.testInstance = new TestNotationSyntaxService(this.mockSubsystem);
+		this.testInstance = new SimpleNotationSyntaxService(this.mockSubsystem);
 	}
 
 	@Test
@@ -88,7 +86,7 @@ public class TestNotationSyntaxServiceTest {
 	@Test
 	public void testRootMapObject(){
 		Object rules[][] = {
-				{ ExpectedTypes.TYPE_NAME, "ROOT_OBJECT" },
+				{ ExpectedTypes.TYPE_NAME, "rootObjectType" },
 				{ ExpectedTypes.TYPE_DESCRIPTION, "No descn" },
 				{
 					ExpectedTypes.PARENTING_TABLE, new Object[][] {
@@ -123,7 +121,7 @@ public class TestNotationSyntaxServiceTest {
 				{ ExpectedTypes.TYPE_EDITABLE, EnumSet.of(EditableShapeAttributes.FILL_COLOUR, EditableShapeAttributes.LINE_COLOUR,
 						EditableShapeAttributes.LINE_STYLE, EditableShapeAttributes.LINE_WIDTH, EditableShapeAttributes.SHAPE_SIZE,
 						EditableShapeAttributes.SHAPE_TYPE) },
-				{ ExpectedTypes.DEFAULT_SHAPE_TYPE, PrimitiveShapeType.ROUNDED_RECTANGLE },
+				{ ExpectedTypes.DEFAULT_SHAPE_TYPE, "rect" },
 				{ ExpectedTypes.DEFAULT_NAME, "Compartment" },
 				{ ExpectedTypes.DEFAULT_DESCN, "" },
 				{ ExpectedTypes.DEFAULT_DETAILED_DESCN, "" },
@@ -131,7 +129,7 @@ public class TestNotationSyntaxServiceTest {
 				{ ExpectedTypes.DEFAULT_LINE_COLOUR, RGB.BLACK },
 				{ ExpectedTypes.DEFAULT_LINE_STYLE, LineStyle.SOLID },
 				{ ExpectedTypes.DEFAULT_LINE_WIDTH, 1 },
-				{ ExpectedTypes.DEFAULT_SIZE, new Size(200, 200) },
+				{ ExpectedTypes.DEFAULT_SIZE, new Dimension(200, 200) },
 				{ ExpectedTypes.DEFAULT_URL, "http://www.proteinatlas.org" },
 				{
 					ExpectedTypes.PROP_DEFNS, new Object[][]{
@@ -143,7 +141,7 @@ public class TestNotationSyntaxServiceTest {
 									{ ExpectedTypes.LABEL_LINE_COLOUR, RGB.BLACK },
 									{ ExpectedTypes.LABEL_LINE_STYLE, LineStyle.SOLID },
 									{ ExpectedTypes.LABEL_LINE_WIDTH, 1 },
-									{ ExpectedTypes.LABEL_SIZE, new Size(10, 10) },
+									{ ExpectedTypes.LABEL_SIZE, new Dimension(10, 10) },
 									},
 							},
 					}
@@ -164,7 +162,7 @@ public class TestNotationSyntaxServiceTest {
 				{ ExpectedTypes.TYPE_DESCRIPTION, "chemical conversion of compounds" },
 				{ ExpectedTypes.TYPE_EDITABLE, EnumSet.of(EditableShapeAttributes.FILL_COLOUR, EditableShapeAttributes.LINE_COLOUR,
 						EditableShapeAttributes.LINE_STYLE, EditableShapeAttributes.LINE_WIDTH,	EditableShapeAttributes.SHAPE_TYPE) },
-				{ ExpectedTypes.DEFAULT_SHAPE_TYPE, PrimitiveShapeType.RECTANGLE },
+				{ ExpectedTypes.DEFAULT_SHAPE_TYPE, "rect" },
 				{ ExpectedTypes.DEFAULT_NAME, "Reaction" },
 				{ ExpectedTypes.DEFAULT_DESCN, "" },
 				{ ExpectedTypes.DEFAULT_DETAILED_DESCN, "" },
@@ -172,7 +170,7 @@ public class TestNotationSyntaxServiceTest {
 				{ ExpectedTypes.DEFAULT_LINE_COLOUR, RGB.BLACK },
 				{ ExpectedTypes.DEFAULT_LINE_STYLE, LineStyle.SOLID },
 				{ ExpectedTypes.DEFAULT_LINE_WIDTH, 1 },
-				{ ExpectedTypes.DEFAULT_SIZE, new Size(10, 10) },
+				{ ExpectedTypes.DEFAULT_SIZE, new Dimension(10, 10) },
 				{ ExpectedTypes.DEFAULT_URL, "" },
 				{
 					ExpectedTypes.PROP_DEFNS, new Object[][]{
@@ -184,7 +182,7 @@ public class TestNotationSyntaxServiceTest {
 									{ ExpectedTypes.LABEL_LINE_COLOUR, RGB.BLACK },
 									{ ExpectedTypes.LABEL_LINE_STYLE, LineStyle.SOLID },
 									{ ExpectedTypes.LABEL_LINE_WIDTH, 1 },
-									{ ExpectedTypes.LABEL_SIZE, new Size(10, 10) },
+									{ ExpectedTypes.LABEL_SIZE, new Dimension(10, 10) },
 									},
 							},
 							{ "KineticLaw", new Object[][]{
@@ -195,7 +193,7 @@ public class TestNotationSyntaxServiceTest {
 									{ ExpectedTypes.LABEL_LINE_COLOUR, RGB.BLACK },
 									{ ExpectedTypes.LABEL_LINE_STYLE, LineStyle.SOLID },
 									{ ExpectedTypes.LABEL_LINE_WIDTH, 1 },
-									{ ExpectedTypes.LABEL_SIZE, new Size(10, 10) },
+									{ ExpectedTypes.LABEL_SIZE, new Dimension(10, 10) },
 									},
 							},
 					}
@@ -217,7 +215,7 @@ public class TestNotationSyntaxServiceTest {
 				{ ExpectedTypes.TYPE_EDITABLE, EnumSet.of(EditableShapeAttributes.FILL_COLOUR, EditableShapeAttributes.LINE_COLOUR,
 						EditableShapeAttributes.LINE_STYLE, EditableShapeAttributes.LINE_WIDTH,	EditableShapeAttributes.SHAPE_SIZE,
 						EditableShapeAttributes.SHAPE_TYPE) },
-				{ ExpectedTypes.DEFAULT_SHAPE_TYPE, PrimitiveShapeType.ROUNDED_RECTANGLE },
+				{ ExpectedTypes.DEFAULT_SHAPE_TYPE, "rect" },
 				{ ExpectedTypes.DEFAULT_NAME, "Macromolecule" },
 				{ ExpectedTypes.DEFAULT_DESCN, "" },
 				{ ExpectedTypes.DEFAULT_DETAILED_DESCN, "" },
@@ -225,7 +223,7 @@ public class TestNotationSyntaxServiceTest {
 				{ ExpectedTypes.DEFAULT_LINE_COLOUR, RGB.BLACK },
 				{ ExpectedTypes.DEFAULT_LINE_STYLE, LineStyle.SOLID },
 				{ ExpectedTypes.DEFAULT_LINE_WIDTH, 1 },
-				{ ExpectedTypes.DEFAULT_SIZE, new Size(20, 20) },
+				{ ExpectedTypes.DEFAULT_SIZE, new Dimension(20, 20) },
 				{ ExpectedTypes.DEFAULT_URL, "" },
 				{
 					ExpectedTypes.PROP_DEFNS, new Object[][]{
@@ -237,7 +235,7 @@ public class TestNotationSyntaxServiceTest {
 									{ ExpectedTypes.LABEL_LINE_COLOUR, RGB.BLACK },
 									{ ExpectedTypes.LABEL_LINE_STYLE, LineStyle.SOLID },
 									{ ExpectedTypes.LABEL_LINE_WIDTH, 1 },
-									{ ExpectedTypes.LABEL_SIZE, new Size(10, 10) },
+									{ ExpectedTypes.LABEL_SIZE, new Dimension(10, 10) },
 									},
 							},
 					}
@@ -265,7 +263,6 @@ public class TestNotationSyntaxServiceTest {
 				{ ExpectedTypes.DEFAULT_LINE_STYLE, LineStyle.SOLID },
 				{ ExpectedTypes.DEFAULT_LINE_WIDTH, 1 },
 				{ ExpectedTypes.DEFAULT_URL, "" },
-				{ ExpectedTypes.DEFAULT_ROUTER_TYPE, ConnectionRouter.SHORTEST_PATH },
 				{
 					ExpectedTypes.PROP_DEFNS, new Object[][]{}
 				},
@@ -276,17 +273,15 @@ public class TestNotationSyntaxServiceTest {
 				},
 				{
 					ExpectedTypes.SOURCE_TERM, new Object[][]{
-							{ ExpectedTypes.TYPE_EDITABLE, EnumSet.of(LinkTermEditableAttributes.TERM_COLOUR,
+							{ ExpectedTypes.TYPE_EDITABLE, EnumSet.of(
 									LinkTermEditableAttributes.END_DECORATOR_TYPE, LinkTermEditableAttributes.END_SIZE,
-									LinkTermEditableAttributes.OFFSET, LinkTermEditableAttributes.TERM_DECORATOR_TYPE,
-									LinkTermEditableAttributes.TERM_SIZE) },
-							{ ExpectedTypes.DEFAULT_TERM_TYPE, PrimitiveShapeType.RECTANGLE },
+									LinkTermEditableAttributes.OFFSET) },
 							{ ExpectedTypes.DEFAULT_TERM_COLOUR, RGB.WHITE },
-							{ ExpectedTypes.DEFAULT_TERM_SIZE, new Size(0, 0) },
-							{ ExpectedTypes.DEFAULT_END_SIZE, new Size(8, 8) },
+							{ ExpectedTypes.DEFAULT_TERM_SIZE, new Dimension(0, 0) },
+							{ ExpectedTypes.DEFAULT_END_SIZE, new Dimension(8, 8) },
 							{ ExpectedTypes.DEFAULT_GAP, Short.valueOf((short)0) },
 							{ ExpectedTypes.DEFAULT_END_TYPE, LinkEndDecoratorShape.NONE },
-							{ ExpectedTypes.DEFAULT_SIZE, new Size(20, 20) },
+							{ ExpectedTypes.DEFAULT_SIZE, new Dimension(20, 20) },
 							{
 								ExpectedTypes.PROP_DEFNS, new Object[][]{
 										{ "ROLE", new Object[][]{
@@ -297,7 +292,7 @@ public class TestNotationSyntaxServiceTest {
 												{ ExpectedTypes.LABEL_LINE_COLOUR, RGB.BLACK },
 												{ ExpectedTypes.LABEL_LINE_STYLE, LineStyle.SOLID },
 												{ ExpectedTypes.LABEL_LINE_WIDTH, 1 },
-												{ ExpectedTypes.LABEL_SIZE, new Size(10, 10) },
+												{ ExpectedTypes.LABEL_SIZE, new Dimension(10, 10) },
 												},
 										},
 								}
@@ -306,17 +301,15 @@ public class TestNotationSyntaxServiceTest {
 				},
 				{
 					ExpectedTypes.TARGET_TERM, new Object[][]{
-							{ ExpectedTypes.TYPE_EDITABLE, EnumSet.of(LinkTermEditableAttributes.TERM_COLOUR,
+							{ ExpectedTypes.TYPE_EDITABLE, EnumSet.of(
 									LinkTermEditableAttributes.END_DECORATOR_TYPE, LinkTermEditableAttributes.END_SIZE,
-									LinkTermEditableAttributes.OFFSET, LinkTermEditableAttributes.TERM_DECORATOR_TYPE,
-									LinkTermEditableAttributes.TERM_SIZE) },
-							{ ExpectedTypes.DEFAULT_TERM_TYPE, PrimitiveShapeType.RECTANGLE },
+									LinkTermEditableAttributes.OFFSET) },
 							{ ExpectedTypes.DEFAULT_TERM_COLOUR, RGB.WHITE },
-							{ ExpectedTypes.DEFAULT_TERM_SIZE, new Size(0, 0) },
-							{ ExpectedTypes.DEFAULT_END_SIZE, new Size(8, 8) },
+							{ ExpectedTypes.DEFAULT_TERM_SIZE, new Dimension(0, 0) },
+							{ ExpectedTypes.DEFAULT_END_SIZE, new Dimension(8, 8) },
 							{ ExpectedTypes.DEFAULT_GAP, Short.valueOf((short)0) },
 							{ ExpectedTypes.DEFAULT_END_TYPE, LinkEndDecoratorShape.NONE },
-							{ ExpectedTypes.DEFAULT_SIZE, new Size(20, 20) },
+							{ ExpectedTypes.DEFAULT_SIZE, new Dimension(20, 20) },
 							{
 								ExpectedTypes.PROP_DEFNS, new Object[][]{
 										{ "STOICH", new Object[][]{
@@ -327,7 +320,7 @@ public class TestNotationSyntaxServiceTest {
 												{ ExpectedTypes.LABEL_LINE_COLOUR, RGB.BLACK },
 												{ ExpectedTypes.LABEL_LINE_STYLE, LineStyle.SOLID },
 												{ ExpectedTypes.LABEL_LINE_WIDTH, 1 },
-												{ ExpectedTypes.LABEL_SIZE, new Size(10, 10) },
+												{ ExpectedTypes.LABEL_SIZE, new Dimension(10, 10) },
 												},
 										},
 								}
@@ -352,7 +345,6 @@ public class TestNotationSyntaxServiceTest {
 				{ ExpectedTypes.DEFAULT_LINE_STYLE, LineStyle.SOLID },
 				{ ExpectedTypes.DEFAULT_LINE_WIDTH, 1 },
 				{ ExpectedTypes.DEFAULT_URL, "" },
-				{ ExpectedTypes.DEFAULT_ROUTER_TYPE, ConnectionRouter.SHORTEST_PATH },
 							{
 					ExpectedTypes.PROP_DEFNS, new Object[][]{}
 				},
@@ -363,14 +355,12 @@ public class TestNotationSyntaxServiceTest {
 				},
 				{
 					ExpectedTypes.SOURCE_TERM, new Object[][]{
-							{ ExpectedTypes.TYPE_EDITABLE, EnumSet.of(LinkTermEditableAttributes.TERM_COLOUR,
+							{ ExpectedTypes.TYPE_EDITABLE, EnumSet.of(
 									LinkTermEditableAttributes.END_DECORATOR_TYPE, LinkTermEditableAttributes.END_SIZE,
-									LinkTermEditableAttributes.OFFSET, LinkTermEditableAttributes.TERM_DECORATOR_TYPE,
-									LinkTermEditableAttributes.TERM_SIZE) },
-							{ ExpectedTypes.DEFAULT_TERM_TYPE, PrimitiveShapeType.RECTANGLE },
+									LinkTermEditableAttributes.OFFSET) },
 							{ ExpectedTypes.DEFAULT_TERM_COLOUR, RGB.WHITE },
-							{ ExpectedTypes.DEFAULT_TERM_SIZE, new Size(0, 0) },
-							{ ExpectedTypes.DEFAULT_END_SIZE, new Size(8, 8) },
+							{ ExpectedTypes.DEFAULT_TERM_SIZE, new Dimension(0, 0) },
+							{ ExpectedTypes.DEFAULT_END_SIZE, new Dimension(8, 8) },
 							{ ExpectedTypes.DEFAULT_GAP, Short.valueOf((short)2) },
 							{ ExpectedTypes.DEFAULT_END_TYPE, LinkEndDecoratorShape.NONE },
 							{
@@ -383,7 +373,7 @@ public class TestNotationSyntaxServiceTest {
 												{ ExpectedTypes.LABEL_LINE_COLOUR, RGB.BLACK },
 												{ ExpectedTypes.LABEL_LINE_STYLE, LineStyle.SOLID },
 												{ ExpectedTypes.LABEL_LINE_WIDTH, 1 },
-												{ ExpectedTypes.LABEL_SIZE, new Size(10, 10) },
+												{ ExpectedTypes.LABEL_SIZE, new Dimension(10, 10) },
 												},
 										},
 								}
@@ -392,17 +382,15 @@ public class TestNotationSyntaxServiceTest {
 				},
 				{
 					ExpectedTypes.TARGET_TERM, new Object[][]{
-							{ ExpectedTypes.TYPE_EDITABLE, EnumSet.of(LinkTermEditableAttributes.TERM_COLOUR,
+							{ ExpectedTypes.TYPE_EDITABLE, EnumSet.of(
 									LinkTermEditableAttributes.END_DECORATOR_TYPE, LinkTermEditableAttributes.END_SIZE,
-									LinkTermEditableAttributes.OFFSET, LinkTermEditableAttributes.TERM_DECORATOR_TYPE,
-									LinkTermEditableAttributes.TERM_SIZE) },
-							{ ExpectedTypes.DEFAULT_TERM_TYPE, PrimitiveShapeType.RECTANGLE },
+									LinkTermEditableAttributes.OFFSET) },
 							{ ExpectedTypes.DEFAULT_TERM_COLOUR, RGB.WHITE },
-							{ ExpectedTypes.DEFAULT_TERM_SIZE, new Size(0, 0) },
-							{ ExpectedTypes.DEFAULT_END_SIZE, new Size(8, 8) },
+							{ ExpectedTypes.DEFAULT_TERM_SIZE, new Dimension(0, 0) },
+							{ ExpectedTypes.DEFAULT_END_SIZE, new Dimension(8, 8) },
 							{ ExpectedTypes.DEFAULT_GAP, Short.valueOf((short)0) },
 							{ ExpectedTypes.DEFAULT_END_TYPE, LinkEndDecoratorShape.TRIANGLE },
-							{ ExpectedTypes.DEFAULT_SIZE, new Size(20, 20) },
+							{ ExpectedTypes.DEFAULT_SIZE, new Dimension(20, 20) },
 							{
 								ExpectedTypes.PROP_DEFNS, new Object[][]{
 										{ "ROLE", new Object[][]{
@@ -413,7 +401,7 @@ public class TestNotationSyntaxServiceTest {
 												{ ExpectedTypes.LABEL_LINE_COLOUR, RGB.BLACK },
 												{ ExpectedTypes.LABEL_LINE_STYLE, LineStyle.SOLID },
 												{ ExpectedTypes.LABEL_LINE_WIDTH, 1 },
-												{ ExpectedTypes.LABEL_SIZE, new Size(10, 10) },
+												{ ExpectedTypes.LABEL_SIZE, new Dimension(10, 10) },
 												},
 										},
 								}
@@ -444,25 +432,15 @@ public class TestNotationSyntaxServiceTest {
 		assertEquals("expected type name", expectations.get(ExpectedTypes.TYPE_NAME), actualObjectType.getName());
 		assertEquals("expected type descn", expectations.get(ExpectedTypes.TYPE_DESCRIPTION), actualObjectType.getDescription());
 		assertEquals("expected type editable", expectations.get(ExpectedTypes.TYPE_EDITABLE), actualObjectType.getEditableAttributes());
-		assertEquals("expected name", expectations.get(ExpectedTypes.DEFAULT_NAME), actualAttribute.getName());
-		assertEquals("expected descn",expectations.get(ExpectedTypes.DEFAULT_DESCN), actualAttribute.getDescription());
-		assertEquals("expected detailed descn", expectations.get(ExpectedTypes.DEFAULT_DETAILED_DESCN), actualAttribute.getDetailedDescription());
 		assertEquals("expected line colour", expectations.get(ExpectedTypes.DEFAULT_LINE_COLOUR), actualAttribute.getLineColour());
 		assertEquals("expected line style", expectations.get(ExpectedTypes.DEFAULT_LINE_STYLE), actualAttribute.getLineStyle());
 		assertEquals("expected line width", expectations.get(ExpectedTypes.DEFAULT_LINE_WIDTH), actualAttribute.getLineWidth());
-		assertEquals("expected line router", expectations.get(ExpectedTypes.DEFAULT_ROUTER_TYPE), actualAttribute.getRouter());
-		assertEquals("expected url", expectations.get(ExpectedTypes.DEFAULT_URL), actualAttribute.getUrl());
 		assertNotNull("expected non-null type name", actualObjectType.getName());
 		assertNotNull("expected non-null type descn", actualObjectType.getDescription());
 		assertNotNull("expected non-null type editable", actualObjectType.getEditableAttributes());
-		assertNotNull("expected non-null name", actualAttribute.getName());
-		assertNotNull("expected non-null descn",actualAttribute.getDescription());
-		assertNotNull("expected non-null detailed descn", actualAttribute.getDetailedDescription());
 		assertNotNull("expected non-null line colour", actualAttribute.getLineColour());
 		assertNotNull("expected non-null line style", actualAttribute.getLineStyle());
 		assertNotNull("expected non-null line width", actualAttribute.getLineWidth());
-		assertNotNull("expected non-null line router", actualAttribute.getRouter());
-		assertNotNull("expected non-null url", actualAttribute.getUrl());
 		validateProperties(actualAttribute, (Object[][])expectations.get(ExpectedTypes.PROP_DEFNS));
 	}
 
@@ -479,13 +457,9 @@ public class TestNotationSyntaxServiceTest {
 		ILinkTerminusDefaults actualAttribute = actualTerminusDefn.getDefaultAttributes();
 		assertEquals("expected syntax service", linkObjectType, actualTerminusDefn.getOwningObjectType());
 		assertEquals("expected type editable", expectations.get(ExpectedTypes.TYPE_EDITABLE), actualTerminusDefn.getEditableAttributes());
-		assertEquals("expected term shape type", expectations.get(ExpectedTypes.DEFAULT_TERM_TYPE), actualAttribute.getTermDecoratorType());
 		assertEquals("expected gap", expectations.get(ExpectedTypes.DEFAULT_GAP), actualAttribute.getGap());
-		assertEquals("expected trm size", expectations.get(ExpectedTypes.DEFAULT_TERM_SIZE), actualAttribute.getTermSize());
-		assertEquals("expected fill colour", expectations.get(ExpectedTypes.DEFAULT_TERM_COLOUR), actualAttribute.getTermColour());
 		assertEquals("expected end type", expectations.get(ExpectedTypes.DEFAULT_END_TYPE), actualAttribute.getEndDecoratorType());
 		assertEquals("expected end size", expectations.get(ExpectedTypes.DEFAULT_END_SIZE), actualAttribute.getEndSize());
-		validateProperties(actualAttribute, (Object[][])expectations.get(ExpectedTypes.PROP_DEFNS));
 	}
 	
 	private Map<IShapeObjectType, Set<IShapeObjectType>> createRuleExpectations(String[][] expectedRules){
@@ -533,7 +507,7 @@ public class TestNotationSyntaxServiceTest {
 		}
 		IShapeObjectType actualShapeObjectType = this.testInstance.findShapeObjectTypeByName((String)expectations.get(ExpectedTypes.TYPE_NAME));
 		validateShapeObjectType(actualShapeObjectType, expectations);
-		IShapeParentingRules parentingRules = actualShapeObjectType.getParentingRules();
+		IObjectTypeParentingRules parentingRules = actualShapeObjectType.getParentingRules();
 		validateParenting(parentingRules, (Object[][])expectations.get(ExpectedTypes.PARENTING_TABLE));
 	}
 	
@@ -543,16 +517,11 @@ public class TestNotationSyntaxServiceTest {
 		assertEquals("expected type name", expectations.get(ExpectedTypes.TYPE_NAME), actualShapeObjectType.getName());
 		assertEquals("expected type descn", expectations.get(ExpectedTypes.TYPE_DESCRIPTION), actualShapeObjectType.getDescription());
 		assertEquals("expected type editable", expectations.get(ExpectedTypes.TYPE_EDITABLE), actualShapeObjectType.getEditableAttributes());
-		assertEquals("expected shape type", expectations.get(ExpectedTypes.DEFAULT_SHAPE_TYPE), actualAttribute.getShapeType());
-		assertEquals("expected name", expectations.get(ExpectedTypes.DEFAULT_NAME), actualAttribute.getName());
-		assertEquals("expected descn",expectations.get(ExpectedTypes.DEFAULT_DESCN), actualAttribute.getDescription());
-		assertEquals("expected detailed descn", expectations.get(ExpectedTypes.DEFAULT_DETAILED_DESCN), actualAttribute.getDetailedDescription());
 		assertEquals("expected fill colour", expectations.get(ExpectedTypes.DEFAULT_FILL_COLOUR), actualAttribute.getFillColour());
 		assertEquals("expected line colour", expectations.get(ExpectedTypes.DEFAULT_LINE_COLOUR), actualAttribute.getLineColour());
 		assertEquals("expected line style", expectations.get(ExpectedTypes.DEFAULT_LINE_STYLE), actualAttribute.getLineStyle());
 		assertEquals("expected line width", expectations.get(ExpectedTypes.DEFAULT_LINE_WIDTH), actualAttribute.getLineWidth());
 		assertEquals("expected size", expectations.get(ExpectedTypes.DEFAULT_SIZE), actualAttribute.getSize());
-		assertEquals("expected url", expectations.get(ExpectedTypes.DEFAULT_URL), actualAttribute.getURL());
 		validateProperties(actualAttribute, (Object[][])expectations.get(ExpectedTypes.PROP_DEFNS));
 	}
 	
@@ -569,13 +538,13 @@ public class TestNotationSyntaxServiceTest {
 			IPropertyDefinition propDefn = actualAttribute.getPropertyDefinition(propName);
 			assertEquals("expected value", expectations.get(ExpectedTypes.PROP_VALUE), propDefn.getDefaultValue());
 			assertEquals("expected editable", expectations.get(ExpectedTypes.PROP_EDITABLE), propDefn.isEditable());
-			assertEquals("expected visualisable", expectations.get(ExpectedTypes.PROP_VISUALISABLE), propDefn.isVisualisable());
-			ILabelAttributeDefaults labelDefaults = propDefn.getLabelDefaults();
+			assertEquals("expected visualisable", expectations.get(ExpectedTypes.PROP_VISUALISABLE), this.testInstance.isVisualisableProperty(propDefn));
+			ILabelAttributeDefaults labelDefaults = this.testInstance.getLabelObjectTypeByProperty(propDefn).getDefaultAttributes();
 			assertEquals("expected fill colour", expectations.get(ExpectedTypes.LABEL_FILL_COLOUR), labelDefaults.getFillColour());
 			assertEquals("expected line colour", expectations.get(ExpectedTypes.LABEL_LINE_COLOUR), labelDefaults.getLineColour());
 			assertEquals("expected line style", expectations.get(ExpectedTypes.LABEL_LINE_STYLE), labelDefaults.getLineStyle());
 			assertEquals("expected line width", expectations.get(ExpectedTypes.LABEL_LINE_WIDTH), labelDefaults.getLineWidth());
-			assertEquals("expected size", expectations.get(ExpectedTypes.LABEL_SIZE), labelDefaults.getSize());
+			assertEquals("expected size", expectations.get(ExpectedTypes.LABEL_SIZE), labelDefaults.getMinimumSize());
 		}
 	}
 	

@@ -106,8 +106,10 @@
 				<pathelement location="${build.bin}" />
 				<pathelement location="." />
 			</classpath>
-			<arg value="-p" />
-			<arg value="org.pathwayeditor" />
+			<!-- arg value="-p" />
+			<arg value="org.pathwayeditor" /-->
+			<arg value="-t" />
+			<arg value="test" />
 			<arg value="simple_eg.ns" />
 		</java>
 	</target>
@@ -183,9 +185,8 @@
 	<target name="doc" description="generate documentation">
 		<javadoc destdir="${doc}" author="true" version="true" use="true" windowtitle="${ant.project.name}" sourcepath="${core.src}" linksource="yes" breakiterator="yes">
 		  <fileset dir="${core.src}">
-	            <include name="org/pathwayeditor/codegenerator/**"/>
-	            <exclude name="org/pathwayeditor/codegenerator/runtime/*"/>
-		    <!--excludesfile name="org/pathwayeditor/codegenerator/runtime/*,org/pathwayeditor/codegenerator/gen/*SyntaxService.java"/-->
+	            <include name="org/pathwayeditor/codegenerator/**/*.java"/>
+	            <exclude name="org/pathwayeditor/codegenerator/runtime/**"/>
 		  </fileset>
 		<classpath refid="buildclasspath" />
 		</javadoc>

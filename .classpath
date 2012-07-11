@@ -2,16 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="lib" path="libs/VisualLanguageToolkit/VisualLanguageToolkit.jar" sourcepath="libs/VisualLanguageToolkit/VisualLanguageToolkit-src.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/NotationSyntaxDefinitionGenerator/libs/VisualLanguageToolkit/VisualLanguageToolkit-docs.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="libs/ToolKit/NotationSubsystemUtils.jar" sourcepath="libs/ToolKit/NotationSubsystemUtils-src.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/NotationSyntaxDefinitionGenerator/libs/VisualLanguageToolkit/VisualLanguageToolkit-docs.jar!/"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="libs/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" sourcepath="libs/jopt-simple-3.0.1/jopt-simple-3.0.1-sources.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:platform:/resource/ContextAdapterCodeGeneration/libs/jopt-simple-3.0.1/jopt-simple-3.0.1-javadoc.jar!/"/>
@@ -25,5 +15,15 @@
 	<classpathentry kind="lib" path="libs/antlr-3.4/lib/antlr-3.4-complete.jar" sourcepath="libs/antlr-3.4/runtime/Java/src/main/java"/>
 	<classpathentry kind="lib" path="libs/junit4.10/junit-4.10.jar" sourcepath="libs/junit4.10/junit-4.10-src.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="libs/VisualLanguageToolkit/VisualLanguageToolkit.jar" sourcepath="libs/VisualLanguageToolkit/VisualLanguageToolkit-src.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/NotationSyntaxDefinitionGenerator/libs/VisualLanguageToolkit/VisualLanguageToolkit-docs.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/ToolKit/NotationSubsystemUtils.jar" sourcepath="libs/ToolKit/NotationSubsystemUtils-src.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/NotationSyntaxDefinitionGenerator/libs/ToolKit/NotationSubsystemUtils-docs.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

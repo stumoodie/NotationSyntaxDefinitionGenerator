@@ -34,7 +34,6 @@ import org.pathwayeditor.businessobjects.typedefn.ILinkTerminusDefinition.LinkTe
 import org.pathwayeditor.businessobjects.typedefn.IObjectType;
 import org.pathwayeditor.businessobjects.typedefn.IObjectTypeParentingRules;
 import org.pathwayeditor.businessobjects.typedefn.IPropertyDefinitionContainer;
-import org.pathwayeditor.businessobjects.typedefn.IRootObjectParentingRules;
 import org.pathwayeditor.businessobjects.typedefn.IRootObjectType;
 import org.pathwayeditor.businessobjects.typedefn.IShapeAttributeDefaults;
 import org.pathwayeditor.businessobjects.typedefn.IShapeObjectType;
@@ -101,7 +100,7 @@ public class TestNotationSyntaxServiceTest {
 		}
 		IRootObjectType actualShapeObjectType = this.testInstance.getRootObjectType();
 		validateRootObjectType(actualShapeObjectType, expectations);
-		IRootObjectParentingRules parentingRules = actualShapeObjectType.getParentingRules();
+		IObjectTypeParentingRules parentingRules = actualShapeObjectType.getParentingRules();
 		validateParenting(parentingRules, (Object[][])expectations.get(ExpectedTypes.PARENTING_TABLE));
 	}
 	

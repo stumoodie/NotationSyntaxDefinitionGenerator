@@ -410,4 +410,5 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 	public boolean containsAnchorNodeObjectType(int uniqueId) {
 		return this.anchorNodeOts.containsKey(uniqueId);
 	}
+	
 }

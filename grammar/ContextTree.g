@@ -4,7 +4,6 @@
 grammar ContextTree;
 
 options {
-	tokenVocab=ContextTree;
 	output=AST;
 	ASTLabelType=CommonTree;
 	language=Java;

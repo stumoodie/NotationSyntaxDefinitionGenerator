@@ -1,6 +1,6 @@
 group Java; 
 
-syntaxServiceClass(notation_id, prop_defns, shapes, links, parenting) ::=<<
+syntaxServiceClass(notation_id, prop_defns, shapes, links, anchor_nodes, parenting) ::=<<
 package <notation_id.pn>;
 
 import java.math.BigDecimal;
@@ -21,6 +21,7 @@ import org.pathwayeditor.businessobjects.typedefn.IShapeObjectType;
 import org.pathwayeditor.codegenerator.runtime.CommonSyntaxService;
 import org.pathwayeditor.codegenerator.runtime.IObjectTypeConstructor;
 import org.pathwayeditor.figure.geometry.Dimension;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.AnchorNodeObjectType;
 import org.pathwayeditor.notationsubsystem.toolkit.definition.IntegerPropertyDefinition;
 import org.pathwayeditor.notationsubsystem.toolkit.definition.LinkConnectionRules;
 import org.pathwayeditor.notationsubsystem.toolkit.definition.LinkObjectType;
@@ -33,8 +34,10 @@ import org.pathwayeditor.notationsubsystem.toolkit.definition.ShapeObjectType;
 public class <notation_id.short_name>NotationSyntaxService extends CommonSyntaxService implements INotationSyntaxService {
   private static final int ROOT_OT = 0;
   private static final int SHAPE_BASE_IDX = 10000;
-  private static final int LINK_BASE_IDX = 20000;
+  private static final int ANCHOR_NODE_BASE_IDX = 20000;
+  private static final int LINK_BASE_IDX = 30000;
   <shapes:{s |static final int OT_<s.id> = SHAPE_BASE_IDX + <i>;};separator="\n">
+  <anchor_nodes:{s |static final int OT_<s.id> = ANCHOR_NODE_BASE_IDX + <i>;};separator="\n">
   <links:{s |static final int OT_<s.id> = LINK_BASE_IDX + <i>;};separator="\n">
 
 
@@ -52,11 +55,14 @@ public class <notation_id.short_name>NotationSyntaxService extends CommonSyntaxS
     List\<IObjectTypeConstructor\<ShapeObjectType\>\> shapeConstructors = new LinkedList\<IObjectTypeConstructor\<ShapeObjectType\>\>();
     //shapes
     <shapes; separator="\n\n">
+    List\<IObjectTypeConstructor\<AnchorNodeObjectType\>\> anchorNodeConstructors = new LinkedList\<IObjectTypeConstructor\<AnchorNodeObjectType\>\>();
+    // anchor nodes
+    <anchor_nodes; separator="\n\n">
     List\<IObjectTypeConstructor\<LinkObjectType\>\> linkConstructors = new LinkedList\<IObjectTypeConstructor\<LinkObjectType\>\>();
     //links
     <links; separator="\n\n">
 
-    super.initialise(rootConstructor, shapeConstructors, linkConstructors);		
+    super.initialise(rootConstructor, shapeConstructors, anchorNodeConstructors, linkConstructors);		
   }
 
   <prop_defns; separator="\n\n">
@@ -107,6 +113,27 @@ shapeConstructors.add(new IObjectTypeConstructor\<ShapeObjectType\>() {
         retVal.getDefaultAttributes().setSize(<node_size>);
         retVal.getDefaultAttributes().setShapeDefinition(<fig_defn>);
         <prop_refs;separator=";\n">;
+        return retVal;
+      }
+    });
+>>
+
+anchor_node(id, name, descr, fig_defn, node_size, fill_colour, font_colour, line_style, line_width, line_colour) ::= <<
+anchorNodeConstructors.add(new IObjectTypeConstructor\<AnchorNodeObjectType\>() {
+      @Override
+      public AnchorNodeObjectType create() {
+        AnchorNodeObjectType retVal = new AnchorNodeObjectType(<notation_id.short_name>NotationSyntaxService.this, OT_<id>, <name>);
+        <if(descr)>
+        retVal.setDescription(<descr>);
+        <endif>
+        retVal.getDefaultAttributes().setFillColour(<fill_colour>);
+        retVal.getDefaultAttributes().setLineColour(<line_colour>);
+        retVal.getDefaultAttributes().setFontColour(<line_colour>);
+        retVal.getDefaultAttributes().setLineStyle(<line_style>);
+        retVal.getDefaultAttributes().setLineWidth(<line_width>);
+        retVal.getDefaultAttributes().setSize(<node_size>);
+        retVal.getDefaultAttributes().setShapeDefinition(<fig_defn>);
+
         return retVal;
       }
     });

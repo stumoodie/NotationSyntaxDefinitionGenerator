@@ -18,6 +18,7 @@ import org.pathwayeditor.businessobjects.typedefn.ILinkObjectType;
 import org.pathwayeditor.businessobjects.typedefn.IObjectType;
 import org.pathwayeditor.businessobjects.typedefn.IRootObjectType;
 import org.pathwayeditor.businessobjects.typedefn.IShapeObjectType;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.AnchorNodeObjectType;
 import org.pathwayeditor.notationsubsystem.toolkit.definition.LinkObjectType;
 import org.pathwayeditor.notationsubsystem.toolkit.definition.RootObjectType;
 import org.pathwayeditor.notationsubsystem.toolkit.definition.ShapeObjectType;
@@ -61,10 +62,14 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 //		return (ShapeObjectType)this.shapeOts.get(uniqueId);
 //	}
 	
-	protected final void initialise(IObjectTypeConstructor<RootObjectType> rootConstructor, List<IObjectTypeConstructor<ShapeObjectType>> shapeConstructors, List<IObjectTypeConstructor<LinkObjectType>> linkConstructors){
+	protected final void initialise(IObjectTypeConstructor<RootObjectType> rootConstructor, List<IObjectTypeConstructor<ShapeObjectType>> shapeConstructors,
+			List<IObjectTypeConstructor<AnchorNodeObjectType>> anchorNodeConstructors, List<IObjectTypeConstructor<LinkObjectType>> linkConstructors){
 		this.rootObjectType = rootConstructor.create();
 		for(IObjectTypeConstructor<ShapeObjectType> shapeConstr : shapeConstructors){
 			assignObjectType(this.shapeOts, shapeConstr.create());
+		}
+		for(IObjectTypeConstructor<AnchorNodeObjectType> shapeConstr : anchorNodeConstructors){
+			assignObjectType(this.anchorNodeOts, shapeConstr.create());
 		}
 		for(IObjectTypeConstructor<LinkObjectType> linkConstr : linkConstructors){
 			assignObjectType(this.linkOts, linkConstr.create());

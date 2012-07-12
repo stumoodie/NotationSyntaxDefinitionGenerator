@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
 }
 
 notation_spec
-	:	n=notation_id p+=properties* ROOT s+=shape+ anchor_node* l+=links* h+=parenting_defn*
-	-> syntaxServiceClass(notation_id={$n.st}, prop_defns={$p}, shapes={$s}, links={$l}, parenting={$h})
+	:	n=notation_id p+=properties* ROOT s+=shape+ a+=anchor_node* l+=links* h+=parenting_defn*
+	-> syntaxServiceClass(notation_id={$n.st}, prop_defns={$p}, shapes={$s}, links={$l}, anchor_nodes={$a}, parenting={$h})
 	;
 	
 notation_id returns[String major, String minor, String patch, String shortName, String packageName]
@@ -91,7 +91,9 @@ node_size
 	;
 	
 anchor_node
-	:	^(ANCHOR_NODE ID (^(NAME t=TEXT)) (^(DESCR d=TEXT))? node_figure_defn node_size fill_colour line_style line_width line_colour)
+	:	^(ANCHOR_NODE ID (^(NAME t=TEXT)) (^(DESCR d=TEXT))? nfd=node_figure_defn sz=node_size fc=fill_colour ls=line_style lw=line_width lc=line_colour)
+	->	anchor_node(id={$ID.text}, name={$t.text}, descr={$d.text}, fig_defn={$nfd.textVal}, node_size={$sz.st}, fill_colour={$fc.st}, 
+			line_style={$ls.st}, line_width={$lw.st}, line_colour={$lc.st})
 	;
 	
 links	:	^(LINK ID (^(NAME t=TEXT)) (^(DESCR d=TEXT))? ls=line_style lw=line_width lc=line_colour p+=port+ e+=valid_ends+ pr+=prop_ref*)

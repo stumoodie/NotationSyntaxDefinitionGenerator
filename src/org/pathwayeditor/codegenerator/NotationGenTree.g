@@ -1,7 +1,7 @@
-tree grammar ContextTreeWalker;
+tree grammar NotationGenTree;
 
 options {
-	tokenVocab=ContextTree;
+	tokenVocab=NotationGen;
 	ASTLabelType=CommonTree;
 	output=template;
 	language=Java;
@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 }
 
 notation_spec
-	:	n=notation_id p+=properties* ROOT s+=shape+ a+=anchor_node* l+=links* h+=parenting_defn*
+	:	n=notation_id p+=properties* root s+=shape+ a+=anchor_node* l+=links* h+=parenting_defn*
 	-> syntaxServiceClass(notation_id={$n.st}, prop_defns={$p}, shapes={$s}, links={$l}, anchor_nodes={$a}, parenting={$h})
 	;
 	
@@ -61,23 +61,25 @@ properties
 	|	^(PROPERTY ID (^(NAME t=TEXT)) (^(DESCR d=TEXT)) ^(TYPE BOOL_PROP) v=VISUALISABLE?)
 	-> define_bool_prop(id={$ID.text}, name={$t.text}, descr={$d.text}, visualisable={$v.text})
 	;
-	
-shape	:	^(SHAPE ID ^(NAME t=TEXT) (^(DESCR d=TEXT))? nfd=node_figure_defn sz=node_size fc=fill_colour ls=line_style lw=line_width lc=line_colour pr+=prop_ref*)
-	->	shape(id={$ID.text}, name={$t.text}, descr={$d.text}, fig_defn={$nfd.textVal}, node_size={$sz.st}, fill_colour={$fc.st}, 
-			line_style={$ls.st}, line_width={$lw.st}, line_colour={$lc.st}, prop_refs={$pr})
+
+root	:	^(ROOT ID)
+	;
+
+shape	:	^(SHAPE ID ^(NAME t=TEXT) (^(DESCR d=TEXT))? nd=node_defn fd=font_defn ld=line_defn pr+=prop_ref*)
+	->	shape(id={$ID.text}, name={$t.text}, descr={$d.text}, node_defn={$nd.st}, line_defn={$ld.st}, font_defn={$fd.st}, prop_refs={$pr})
 	;
 	
 prop_ref:	^(ID (v=number -> prop_ref(id={$ID.text}, val={$v.st})|b=bool_val -> prop_ref(id={$ID.text}, val={$b.st})|l=string_literal -> prop_ref(id={$ID.text}, val={$l.st})) )
 	;
 	
+node_defn
+	:	^(NODE nfd=node_figure_defn sz=node_size c=colour)
+	-> node_defn(fig_defn={$nfd.textVal}, node_size={$sz.st}, colour={$c.st})
+	;
+	
 string_literal
 	:	TEXT
 	-> string_lit(val={$TEXT.text})
-	;
-	
-fill_colour
-	:	^(FCOLOUR color)
-	->	{$color.st}
 	;
 	
 node_figure_defn returns[String textVal]
@@ -89,20 +91,39 @@ node_size
 	:	^(SIZE_KWD w=number h=number)
 		-> node_size(w={$w.st}, h={$h.st})
 	;
-	
+
+font_defn
+	:	^(FONT c=colour fs=font_style fp=font_pitch)
+		-> font_defn(colour={$c.st}, style={$fs.st}, pitch={$fp.st})
+	;
+
+font_style
+	:	^(STYLE ID)
+		-> font_style(id={$ID.text})
+	;
+
+font_pitch
+	:	^(PITCH n=number)
+		-> font_pitch(id={$n.st})
+	;
+
+line_defn
+	:	^(LINE ls=line_style lw=line_width c=colour)
+		-> line_defn(style={$ls.st}, width={$lw.st}, colour={$c.st})
+	;
+
 anchor_node
-	:	^(ANCHOR_NODE ID (^(NAME t=TEXT)) (^(DESCR d=TEXT))? nfd=node_figure_defn sz=node_size fc=fill_colour ls=line_style lw=line_width lc=line_colour)
-	->	anchor_node(id={$ID.text}, name={$t.text}, descr={$d.text}, fig_defn={$nfd.textVal}, node_size={$sz.st}, fill_colour={$fc.st}, 
-			line_style={$ls.st}, line_width={$lw.st}, line_colour={$lc.st})
+	:	^(ANCHOR_NODE ID (^(NAME t=TEXT)) (^(DESCR d=TEXT))? nd=node_defn fd=font_defn ld=line_defn)
+	->	anchor_node(id={$ID.text}, name={$t.text}, descr={$d.text}, node_defn={$nd.st}, font_defn={$fd.st}, line_defn={$ld.st})
 	;
 	
-links	:	^(LINK ID (^(NAME t=TEXT)) (^(DESCR d=TEXT))? ls=line_style lw=line_width lc=line_colour p+=port+ e+=valid_ends+ pr+=prop_ref*)
-	->	link(id={$ID.text}, name={$t.text}, descr={$d.text}, line_style={$ls.st}, line_width={$lw.st}, line_colour={$lc.st}, ports={$p}, prop_refs={$pr}, connections={$e})
+links	:	^(LINK ID (^(NAME t=TEXT)) (^(DESCR d=TEXT))? ld=line_defn fd=font_defn p+=port+ e+=valid_ends+ pr+=prop_ref*)
+	->	link(id={$ID.text}, name={$t.text}, descr={$d.text}, line_defn={$ld.st}, font_defn={$fd.st}, ports={$p}, prop_refs={$pr}, connections={$e})
 	;
 	
-port	:	^(s=SRC_TERM a=ARROWHEADSTYLE o=offset n=node_size)
+port	:	^(s=SRC_TERM a=ID o=offset n=node_size)
 	->	port(type={$s.text}, arrow_style={$a.text}, gap={$o.st}, size={$n.st})
-	|	^(t=TGT_TERM a=ARROWHEADSTYLE o=offset n=node_size)
+	|	^(t=TGT_TERM a=ID o=offset n=node_size)
 	->	port(type={$t.text}, arrow_style={$a.text}, gap={$o.st}, size={$n.st})
 	;
 
@@ -120,22 +141,17 @@ parenting_defn
 	->	define_hierarchy(parent={$p.text}, children={$c})
 	;
 
-line_colour
-	:	^(LCOLOUR color)
-	->	{$color.st}
-	;
-
 line_width
-	:	^(LWIDTH number)
+	:	^(WIDTH number)
 	-> {$number.st}
 	;
 
 line_style
-	:	^(LSTYLE LINE_STYLE)
-	-> line_style(style={$LINE_STYLE.text})
+	:	^(STYLE ID)
+	-> line_style(style={$ID.text})
 	;
 		
-color	:	HEXNUMBER
+colour	:	^(COLOUR HEXNUMBER)
 	-> colour(hex_num={$HEXNUMBER.text})
 	;
 

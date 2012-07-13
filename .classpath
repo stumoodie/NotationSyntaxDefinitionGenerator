@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry excluding="org/pathwayeditor/codegenerator/output/" kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="lib" path="libs/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" sourcepath="libs/jopt-simple-3.0.1/jopt-simple-3.0.1-sources.jar">
 		<attributes>

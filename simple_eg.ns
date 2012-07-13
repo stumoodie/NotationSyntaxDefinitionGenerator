@@ -3,51 +3,125 @@
 */
 notation org.pathwayeditor.codegenerator.Simple (name = "Simple Notation" descr="Simple Notation to test" version=0.1.0)
 
-property ECnum (name="EC" descr="Enzyme comission number" type=text visualisable)
+property ECnum (name="EC" descr="Enzyme comission number" type=text)
 property Stoich (name="STOICH" descr="Stoichiometry coefficient" type=real)
 property Card (name="Cardinality" descr="Cardinality of link" type=integer)
-property node_name (name="Name" descr="Name" type=text visualisable)
+property node_name (name="Name" descr="Name" type=text)
 
-root ( ) 
+root rootNode ( ) 
+
+label generalLab (name="Compartment" descr="Functional compartment"
+				node(defn = "rect"
+                	size = [200,200]
+                	colour = #ffffffff
+                	)
+                font(
+                	colour = #000000ff
+                	style = NORMAL
+                	pitch = 12.0 
+                	)
+                line (
+                	style = SOLID
+                	width = 2.0
+                	colour = #000000ff
+                )
+            )
+
+label ecLabel (name="EC Num Lab" descr="Label for EC Number"
+				format = "%11s"
+				node(defn = "rect"
+                	size = [200,200]
+                	colour = #ffffffff
+                	)
+                font(
+                	colour = #000000ff
+                	style = NORMAL
+                	pitch = 12.0 
+                	)
+                line (
+                	style = SOLID
+                	width = 2.0
+                	colour = #000000ff
+                )
+            )
 
 shape   Compartment (name="Compartment" descr="Functional compartment"
-                defn = "rect"
-                size = [200,200]
-                fcolor = #ffffffff
-                lstyle = SOLID
-                lwidth = 2.0
-                lcolor = #000000ff
-                Stoich = 2
-                node_name = "Comp Name"
+				node(
+                	defn = "rect"
+                	size = [200,200]
+                	colour = #ffffffff
+                )
+                font(
+                	colour = #ffffffff
+                	style = NORMAL
+                	pitch = 12.0 
+                )
+                line(
+                	style = SOLID
+                	width = 2.0
+                	colour = #000000ff
+                )
+                property(
+                	Stoich = 2
+                	node_name{generalLab} = "Comp Name"
+                )
         )
         
 shape   Process ( name="Reaction" descr="chemical conversion of compounds"
-                defn = "oval"
-                size = [10,10]
-                fcolor = #ffffffff
-                lstyle = SOLID
-                lwidth = 1
-                lcolor = #ffff00ff
-                ECnum = "-.-.-.-"
-                node_name = "Proc Name"
+				node(
+                	defn = "oval"
+                	size = [10,10]
+                	colour = #ffffffff
+				)
+				font(
+				    colour =  #ffffffff
+				    style = ITALIC
+				    pitch = 12.0
+				)
+				line(
+				    style = SOLID
+				    width = 1
+				    colour = #ffff00ff
+				)
+				property(
+                	ECnum{ecLabel} = "-.-.-.-"
+                	node_name{generalLab} = "Proc Name"
+                )
         )
 
-anchorNode Outcome ( name="Outcome" descr="Outcome" defn="oval" size=[10, 10] fcolor = #ffffffff lstyle=SOLID lwidth=1.0 lcolor=#000000ff )
+anchorNode Outcome ( name="Outcome" descr="Outcome"
+				node(
+					defn="oval"
+					size=[10, 10]
+					colour = #ffffffff
+				)
+				font(
+					colour = #ffffffff
+					style = NORMAL
+					pitch = 10.0
+				)
+				line(style=SOLID width=1.0 colour=#000000ff)
+		)
        
 link    Consume (name="Consumption Link"
-                lstyle = DASHED
-                lwidth = .99
-                lcolor = #000000ff
-                sterm = NONE (
+				line(
+                	style = DASHED
+                	width = .99
+                	colour = #000000ff
+                )
+                source (NONE 
                         offset = 0
                         size = [10,10]
                 )
-                tterm = NONE (
+                target (NONE
                         offset = 0
                         size = [20.2,10.5]
                 )
+                property(
+                	Card{generalLab} = 1
+                )
                 Compartment [Process]
-                Card = 1
         )
 
+rootNode ^ [Compartment, Process]
 Compartment ^ [Process]

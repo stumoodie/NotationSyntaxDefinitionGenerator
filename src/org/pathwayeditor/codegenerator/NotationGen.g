@@ -1,7 +1,7 @@
 /**
 
 */
-grammar ContextTree;
+grammar NotationGen;
 
 options {
 	output=AST;
@@ -24,8 +24,8 @@ package org.pathwayeditor.codegenerator.gen;
 @members{
 	}
 
-notation_spec :	notation_id properties* rmo shape+ anchor_node* links* parenting_defn* EOF
-	 -> notation_id properties* rmo shape+ anchor_node* links* parenting_defn*
+notation_spec :	notation_id properties* rmo label* shape+ anchor_node* links* parenting_defn* EOF
+	 -> notation_id properties* rmo label* shape+ anchor_node* links* parenting_defn*
 	;
 
 notation_id
@@ -39,21 +39,64 @@ version	:	VERSION '=' VERSION_NUM
 
 
 properties
-	:	PROPERTY ID '(' name description type  VISUALISABLE? ')'
-		-> ^(PROPERTY ID name description type VISUALISABLE?)
+	:	PROPERTY ID '(' name description type ')'
+		-> ^(PROPERTY ID name description type )
 	;
 
-shape	: 	SHAPE ID '(' name description? node_figure_defn node_size fill_colour line_style line_width line_colour prop_ref* ')'
-		 -> ^(SHAPE ID name description? node_figure_defn node_size fill_colour line_style line_width line_colour prop_ref*)
+label	:	LABEL ID '(' name description? format? node_defn font_defn line_defn ')'
+		-> ^(LABEL ID name description? format? node_defn font_defn line_defn)
 	;
 
-prop_ref:	ID '=' (n=number|b=bool_val|t=TEXT)
-		-> ^(ID $n? $b? $t?)
+format	:	FORMAT '=' TEXT
+		-> ^(FORMAT TEXT)
 	;
 
-fill_colour
-	:	FCOLOUR '='  color
-	-> ^(FCOLOUR color)
+shape	: 	SHAPE ID '(' name description? node_defn font_defn line_defn prop_defn? ')'
+		 -> ^(SHAPE ID name description? node_defn line_defn prop_defn?)
+	;
+
+node_defn
+	:	NODE '('  node_figure_defn node_size colour ')'
+	-> ^(NODE node_figure_defn node_size colour)
+	;
+
+line_defn
+	:	LINE '(' line_style line_width colour ')'
+	-> ^(LINE line_style line_width colour)
+	;
+	
+font_defn
+	:	FONT '(' colour font_style font_pitch ')'
+	-> ^(FONT colour font_style font_pitch)
+	;
+	
+font_style
+	:	STYLE '=' ID
+	-> ^(STYLE ID)
+	;
+
+font_pitch
+	:	PITCH '=' number
+	-> ^(PITCH number)
+	;
+
+prop_defn
+	:	PROPERTY '(' prop_ref+ ')'
+	-> ^(PROPERTY prop_ref+)
+	;
+
+prop_ref:	ID label_ref? '=' (n=number|b=bool_val|t=TEXT)
+		-> ^(ID label_ref? $n? $b? $t?)
+	;
+
+label_ref
+	:	'{' ID '}'
+	->	^(LABEL ID)
+	;
+
+colour
+	:	COLOUR '='  color
+	-> ^(COLOUR color)
 	;
 
 node_figure_defn
@@ -67,16 +110,16 @@ node_size
 	;
 
 anchor_node
-	: 	ANCHOR_NODE ID '(' name description? node_figure_defn node_size fill_colour line_style line_width line_colour ')'
-		 -> ^(ANCHOR_NODE ID name description? node_figure_defn node_size fill_colour line_style line_width line_colour)
+	: 	ANCHOR_NODE ID '(' name description? node_defn font_defn line_defn ')'
+		 -> ^(ANCHOR_NODE ID name description? node_defn font_defn line_defn)
 	;
 
-links	:	LINK ID '(' name description? line_style line_width line_colour port+ valid_ends+ prop_ref* ')'
-		-> ^(LINK ID name description? line_style line_width line_colour port+ valid_ends+ prop_ref*) 
+links	:	LINK ID '(' name description? line_defn port+ prop_defn?  valid_ends+ ')'
+		-> ^(LINK ID name description? line_defn port+ prop_defn? valid_ends+) 
 	;
 	
-port	: 	(s=SRC_TERM|s=TGT_TERM) '=' ARROWHEADSTYLE '(' offset node_size ')'
-		-> ^($s  ARROWHEADSTYLE offset node_size)
+port	: 	(s=SRC_TERM|s=TGT_TERM) '(' ID offset node_size ')'
+		-> ^($s ID offset node_size)
 	;
 
 offset	:	OFFSET '=' INT
@@ -89,8 +132,8 @@ valid_ends
 	-> ^(ID bracketed_list)
 	;
 
-rmo	:	ROOT '(' ')'
-		 -> ROOT
+rmo	:	ROOT ID '(' ')'
+		 -> ^(ROOT ID)
 	;
 
 /**
@@ -107,23 +150,17 @@ parenting_defn
 	;
 
 bracketed_list	:	'[' ID (',' ID)* ']' -> ID+
-	|	'[' '*' ']' -> '*'
 	;
 
-
-line_colour
-	:	LCOLOUR '=' color
-	-> ^(LCOLOUR color)
-	;
 
 line_width
-	:	LWIDTH '=' number
-	-> ^(LWIDTH number)
+	:	WIDTH '=' number
+	-> ^(WIDTH number)
 	;
 
 line_style
-	:	LSTYLE '=' LINE_STYLE
-	-> ^(LSTYLE LINE_STYLE)
+	:	STYLE '=' ID
+	-> ^(STYLE ID)
 	;
 		
 color	:	HEXNUMBER
@@ -165,6 +202,9 @@ ANCHOR_NODE
 SHAPE	:	'shape'
 	;
 
+LABEL	:	'label'
+	;
+
 LINK	:	'link'
 	;
 
@@ -174,34 +214,42 @@ ROOT	:	'root'
 SIZE_KWD:	'size'
 	;
 
-SRC_TERM:	'sterm'
+SRC_TERM:	'source'
 	;
 	
-TGT_TERM:	'tterm'
+TGT_TERM:	'target'
 	;
 
 DEFN
 	:	'defn'
 	;
 
-FCOLOUR
-	:	'fcolor'
+COLOUR
+	:	'colour'
 	;
 
-LSTYLE
-	:	'lstyle'
+STYLE
+	:	'style'
 	;
 
-LWIDTH
-	:	'lwidth'
+WIDTH
+	:	'width'
 	;
 
-LCOLOUR
-	:	'lcolor'
+FORMAT	:	'format'
 	;
 
 NAME
 	:	'name'
+	;
+
+NODE	:	'node'
+	;
+
+LINE	:	'line'
+	;
+
+FONT	:	'font'
 	;
 
 DESCR
@@ -231,23 +279,14 @@ INT_PROP
 OFFSET
 	:	'offset'
 	;
-
-ARROWHEADSTYLE
-	:	'DIAMOND'|'ARROW'|'DOUBLE_ARROW'|'TRIANGLE'|'EMPTY_DIAMOND'|'BAR'|'DOUBLE_BAR'|'EMPTY_CIRCLE'|'NONE'|'SQUARE'|'EMPTY_SQUARE'|'EMPTY_TRIANGLE'|'TRIANGLE_BAR'
-	;
 	
-LINE_STYLE 
-	:	'SOLID' | 'DASHED' | 'DASH_DOT' | 'DASH_DOT_DOT' | 'DOT'
-	;
-
-	
-VISUALISABLE 
-	:	'visualisable';
-
 PROPERTY
 	:	'property'
 	;
 
+PITCH	:	'pitch'
+	;
+	
 TRUE	:	'true'
 	;
 	

@@ -18,17 +18,14 @@
 	<property name="docbase.dir" location="${build.root}/docs" />
 	<property name="doc" location="${docbase.dir}/api" />
 	<property name="lib.dir" location="libs" />
-	<property name="grammar" location="grammar" />
 	<property name="jar.name" location="${dist.jar}/${ant.project.name}.jar" />
-	<property name="grammar.path" location="grammar" />
-	<property name="grammar.file" value="${grammar.path}/ContextTree.g" />
-	<property name="walker.file" value="${grammar.path}/ContextTreeWalker.g" />
-	<property name="ca.file" value="metabolic.ca" />
+	<property name="grammar.path" location="${core.src}/org/pathwayeditor/codegenerator" />
+	<property name="grammar.file" value="${grammar.path}/NotationGen.g" />
+	<property name="walker.file" value="${grammar.path}/NotationGenTree.g" />
 	<property name="package" value="org/pathwayeditor/codegenerator" />
 	<property name="test.package" value="org/pathwayeditor/codegenerator/test" />
 	<property name="main.class" value="org.pathwayeditor.codegenerator.SyntaxDefinitionGenerator" />
 	<property name="test.package.dir" value="${test}/${test.package}" />
-	<property name="test.defn.file" value="test.ca" />
 
 	<!-- where to write/find token files -->
 	<property name="token.lib" location="${src}/${package}" />
@@ -87,7 +84,7 @@
 	<target name="compile" depends="grammar,walker,init" description="compile">
 		<!-- Compile the java code from ${src} into ${classes} -->
 		<javac debug="true" srcdir="${core.src}" destdir="${build.bin}" includeantruntime="false" listfiles="yes" deprecation="yes" verbose="false"
-			excludes="org/pathwayeditor/codegenerator/runtime/*,org/pathwayeditor/codegenerator/gen/*SyntaxService.java" >
+			excludes="org/pathwayeditor/codegenerator/runtime/*,org/pathwayeditor/codegenerator/gen/*SyntaxService.java,org/pathwayeditor/codegenerator/output/**" >
 			<classpath refid="buildclasspath" />
 		</javac>
 		<copy todir="${build.bin}">
@@ -187,6 +184,7 @@
 		  <fileset dir="${core.src}">
 	            <include name="org/pathwayeditor/codegenerator/**/*.java"/>
 	            <exclude name="org/pathwayeditor/codegenerator/runtime/**"/>
+            	<exclude name="org/pathwayeditor/codegenerator/output/**"/>
 		  </fileset>
 		<classpath refid="buildclasspath" />
 		</javadoc>

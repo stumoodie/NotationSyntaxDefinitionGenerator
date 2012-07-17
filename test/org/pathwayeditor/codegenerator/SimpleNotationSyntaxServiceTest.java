@@ -62,6 +62,7 @@ public class SimpleNotationSyntaxServiceTest {
 	private static final double DOUBLE_CMP_THRES = 0.000004;
 	private static final String EXPECTED_SHAPE_PROP_NAME = "Cardinality";
 	private static final String EXPECTED_SHAPE_PROP_NAME2 = "Name";
+	private static final int NUM_LABEL_OTS = 2;
 	private INotationSyntaxService testInstance;
 	private static INotation TEST_NOTATION = new GeneralNotation(TEST_NOT_QUALIFIED_NAME, TEST_NOT_DISP_NAME, TEST_NOT_DESCN, TEST_NOT_VERSION);
 	private INotationSubsystem expectedNotationSubsystem;
@@ -212,6 +213,11 @@ public class SimpleNotationSyntaxServiceTest {
 	@Test
 	public void testNumShapeObjectTypes() {
 		assertEquals("expected num", NUM_SHAPE_OTS, this.testInstance.numShapeObjectTypes());
+	}
+
+	@Test
+	public void testNumLabelObjectTypes() {
+		assertEquals("expected num", NUM_LABEL_OTS, this.testInstance.numLabelObjectTypes());
 	}
 
 	@Test

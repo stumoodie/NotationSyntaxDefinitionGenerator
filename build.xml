@@ -19,6 +19,9 @@
 	<property name="jar.dir" value="jars"/>
 	<property name="jar.name.bin" value="${ant.project.name}.jar" />
 	<property name="jar.name.src" value="${ant.project.name}-src.jar" />
+	<property name="jar.name.runtime.doc" value="${ant.project.name}-runtime-docs.jar" />
+	<property name="jar.name.runtime.bin" value="${ant.project.name}-runtime.jar" />
+	<property name="jar.name.runtime.src" value="${ant.project.name}-runtime-src.jar" />
 	<property name="jar.name.doc" value="${ant.project.name}-docs.jar" />
 	<property name="grammar.path" location="${core.src}/org/pathwayeditor/codegenerator" />
 	<property name="grammar.file" value="${grammar.path}/NotationGen.g" />
@@ -185,6 +188,15 @@
 		</javadoc>
 	</target>
 
+	<target name="docs.runtime" description="generate documentation">
+		<javadoc destdir="${build.doc}" author="true" version="true" use="true" windowtitle="${ant.project.name}" sourcepath="${core.src}" linksource="yes" breakiterator="yes">
+		  <fileset dir="${core.src}">
+	            <include name="org/pathwayeditor/codegenerator/runtime/*.java"/>
+		  </fileset>
+		<classpath refid="buildclasspath" />
+		</javadoc>
+	</target>
+
 	<target name="clean-grammar">
 		<delete verbose="true" dir="${parser.output}" />
 	</target>
@@ -195,7 +207,7 @@
 
 	<target name="all" depends="runnable-jar,all-jars" description="create a distribution and javadocs" />
 
-	<target name="all-jars" depends="jar-bin,jar-src,jar-docs,runnable-jar"/>
+	<target name="all-jars" depends="jar-bin,jar-src,jar-docs,jar-bin.runtime,jar-src.runtime,jar-docs.runtime,runnable-jar"/>
 	
 	<target name="init-jardirs">
 		<delete dir="${jar.dir}" />
@@ -217,6 +229,27 @@
 	<target name="jar-docs" depends="doc">
 		<mkdir dir="${jar.dir}" />
 		<jar destfile="${jar.dir}/${jar.name.doc}">
+			<fileset dir="${build.doc}" />
+		</jar>
+	</target>
+	
+	<target name="jar-bin.runtime" depends="compile-runtime, init-jardirs">
+		<jar destfile="${jar.dir}/${jar.name.runtime.bin}">
+			<fileset dir="${build.bin}" />
+		</jar>
+	</target>
+	
+	<target name="jar-src.runtime" depends="init-jardirs">
+		<jar destfile="${jar.dir}/${jar.name.runtime.src}">
+			<fileset dir="${core.src}" >
+				<include name="org/pathwayeditor/codegenerator/runtime/**"/>
+			</fileset>
+		</jar>
+	</target>
+	
+	<target name="jar-docs.runtime" depends="docs.runtime,init-jardirs">
+		<mkdir dir="${jar.dir}" />
+		<jar destfile="${jar.dir}/${jar.name.runtime.doc}">
 			<fileset dir="${build.doc}" />
 		</jar>
 	</target>

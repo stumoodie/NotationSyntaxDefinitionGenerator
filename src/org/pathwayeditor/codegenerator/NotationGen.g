@@ -25,7 +25,7 @@ package org.pathwayeditor.codegenerator.gen;
 	}
 
 notation_spec :	notation_id properties* rmo label* shape+ anchor_node* links* parenting_defn* EOF
-	 -> notation_id properties* rmo label* shape+ anchor_node* links* parenting_defn*
+	 -> notation_id rmo label* properties* shape+ anchor_node* links* parenting_defn*
 	;
 
 notation_id
@@ -39,20 +39,20 @@ version	:	VERSION '=' VERSION_NUM
 
 
 properties
-	:	PROPERTY ID '(' name description type ')'
-		-> ^(PROPERTY ID name description type )
+	:	PROPERTY ID label_ref?  '(' name description type ')' prop_init_val
+		-> ^(PROPERTY ID label_ref? name description type prop_init_val)
 	;
 
-label	:	LABEL ID '(' name description? format? node_defn font_defn line_defn ')'
-		-> ^(LABEL ID name description? format? node_defn font_defn line_defn)
+prop_init_val
+	:	'=' (number -> ^('=' number)|bool_val -> ^('=' bool_val) |TEXT -> ^('=' TEXT) )
 	;
 
-format	:	FORMAT '=' TEXT
-		-> ^(FORMAT TEXT)
+label	:	LABEL ID '(' name description? node_defn font_defn line_defn ')'
+		-> ^(LABEL ID name description? node_defn font_defn line_defn)
 	;
 
 shape	: 	SHAPE ID '(' name description? node_defn font_defn line_defn prop_defn? ')'
-		 -> ^(SHAPE ID name description? node_defn line_defn prop_defn?)
+		 -> ^(SHAPE ID name description? node_defn font_defn line_defn prop_defn?)
 	;
 
 node_defn
@@ -81,12 +81,8 @@ font_pitch
 	;
 
 prop_defn
-	:	PROPERTY '(' prop_ref+ ')'
-	-> ^(PROPERTY prop_ref+)
-	;
-
-prop_ref:	ID label_ref? '=' (n=number|b=bool_val|t=TEXT)
-		-> ^(ID label_ref? $n? $b? $t?)
+	:	PROPERTY '(' ID+ ')'
+	-> ^(PROPERTY ID+)
 	;
 
 label_ref
@@ -234,9 +230,6 @@ STYLE
 
 WIDTH
 	:	'width'
-	;
-
-FORMAT	:	'format'
 	;
 
 NAME

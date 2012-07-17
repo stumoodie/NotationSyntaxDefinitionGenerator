@@ -3,10 +3,10 @@
 */
 notation org.pathwayeditor.codegenerator.Simple (name = "Simple Notation" descr="Simple Notation to test" version=0.1.0)
 
-property ECnum (name="EC" descr="Enzyme comission number" type=text)
-property Stoich (name="STOICH" descr="Stoichiometry coefficient" type=real)
-property Card (name="Cardinality" descr="Cardinality of link" type=integer)
-property node_name (name="Name" descr="Name" type=text)
+property ECnum{ecLabel} (name="EC" descr="Enzyme comission number" type=text) = "--.--.--.--"
+property Stoich{generalLab} (name="STOICH" descr="Stoichiometry coefficient" type=real) = 1
+property Card (name="Cardinality" descr="Cardinality of link" type=integer) = 1
+property node_name{generalLab} (name="Name" descr="Name" type=text) = "Name"
 
 root rootNode ( ) 
 
@@ -28,7 +28,6 @@ label generalLab (name="Compartment" descr="Functional compartment"
             )
 
 label ecLabel (name="EC Num Lab" descr="Label for EC Number"
-				format = "%11s"
 				node(defn = "rect"
                 	size = [200,200]
                 	colour = #ffffffff
@@ -52,7 +51,7 @@ shape   Compartment (name="Compartment" descr="Functional compartment"
                 	colour = #ffffffff
                 )
                 font(
-                	colour = #ffffffff
+                	colour = #ff0000ff
                 	style = NORMAL
                 	pitch = 12.0 
                 )
@@ -62,8 +61,8 @@ shape   Compartment (name="Compartment" descr="Functional compartment"
                 	colour = #000000ff
                 )
                 property(
-                	Stoich = 2
-                	node_name{generalLab} = "Comp Name"
+                	node_name
+                	Card
                 )
         )
         
@@ -84,8 +83,8 @@ shape   Process ( name="Reaction" descr="chemical conversion of compounds"
 				    colour = #ffff00ff
 				)
 				property(
-                	ECnum{ecLabel} = "-.-.-.-"
-                	node_name{generalLab} = "Proc Name"
+                	ECnum
+                	node_name
                 )
         )
 
@@ -118,7 +117,7 @@ link    Consume (name="Consumption Link"
                         size = [20.2,10.5]
                 )
                 property(
-                	Card{generalLab} = 1
+                	Stoich
                 )
                 Compartment [Process]
         )

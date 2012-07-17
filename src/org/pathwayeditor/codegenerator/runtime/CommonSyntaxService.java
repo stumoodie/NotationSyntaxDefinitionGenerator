@@ -1,6 +1,5 @@
 package org.pathwayeditor.codegenerator.runtime;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +18,7 @@ import org.pathwayeditor.businessobjects.typedefn.IObjectType;
 import org.pathwayeditor.businessobjects.typedefn.IRootObjectType;
 import org.pathwayeditor.businessobjects.typedefn.IShapeObjectType;
 import org.pathwayeditor.notationsubsystem.toolkit.definition.AnchorNodeObjectType;
+import org.pathwayeditor.notationsubsystem.toolkit.definition.LabelObjectType;
 import org.pathwayeditor.notationsubsystem.toolkit.definition.LinkObjectType;
 import org.pathwayeditor.notationsubsystem.toolkit.definition.RootObjectType;
 import org.pathwayeditor.notationsubsystem.toolkit.definition.ShapeObjectType;
@@ -29,22 +29,17 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 	private final SortedMap<Integer, IShapeObjectType> shapeOts;
 	private final SortedMap<Integer, ILinkObjectType> linkOts;
 	private final SortedMap<Integer, IAnchorNodeObjectType> anchorNodeOts;
-	private final SortedMap<IPropertyDefinition, ILabelObjectType> labelOts;
+	private final SortedMap<Integer, ILabelObjectType> labelOts;
+	private final SortedMap<IPropertyDefinition, ILabelObjectType> visualiableProperties;
 	private RootObjectType rootObjectType;
 
 	protected CommonSyntaxService(INotationSubsystem subsystem){
 		this.subsystem = subsystem;
 		this.shapeOts = new TreeMap<Integer, IShapeObjectType>();
 		this.linkOts = new TreeMap<Integer, ILinkObjectType>();
+		this.labelOts = new TreeMap<Integer, ILabelObjectType>();
 		this.anchorNodeOts = new TreeMap<Integer, IAnchorNodeObjectType>();
-		this.labelOts = new TreeMap<IPropertyDefinition, ILabelObjectType>();
-//		this.rootObjectType = createRootObject();
-//		assignObjectType(this.shapeOts, createShapeA());
-//		assignObjectType(this.shapeOts, createShapeB());
-//		assignObjectType(this.linkOts, createLinkA());
-//		assignObjectType(this.anchorNodeOts, createAnchorShapeA());
-//		defineParenting();
-//		defineConnections();
+		this.visualiableProperties = new TreeMap<IPropertyDefinition, ILabelObjectType>(); 
 	}
 	
 	protected static Colour getColour(String hex) {
@@ -58,13 +53,17 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 
 	protected abstract void defineParenting();
 	
-//	protected INodeObjectType getNodeOT(int uniqueId){
-//		return (ShapeObjectType)this.shapeOts.get(uniqueId);
-//	}
-	
 	protected final void initialise(IObjectTypeConstructor<RootObjectType> rootConstructor, List<IObjectTypeConstructor<ShapeObjectType>> shapeConstructors,
-			List<IObjectTypeConstructor<AnchorNodeObjectType>> anchorNodeConstructors, List<IObjectTypeConstructor<LinkObjectType>> linkConstructors){
+			List<IObjectTypeConstructor<AnchorNodeObjectType>> anchorNodeConstructors, List<IObjectTypeConstructor<LabelObjectType>> labelConstructors,
+			List<IObjectTypeConstructor<LinkObjectType>> linkConstructors, List<IPropertyDefinitionConstructor> propConstructors){
 		this.rootObjectType = rootConstructor.create();
+		// labels must got first because properties created later use them is visualisable.
+		for(IObjectTypeConstructor<LabelObjectType> labelConstr : labelConstructors){
+			assignObjectType(this.labelOts, labelConstr.create());
+		}
+		for(IPropertyDefinitionConstructor propConst : propConstructors){
+			propConst.create();
+		}
 		for(IObjectTypeConstructor<ShapeObjectType> shapeConstr : shapeConstructors){
 			assignObjectType(this.shapeOts, shapeConstr.create());
 		}
@@ -76,46 +75,13 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 		}
 		defineParenting();
 	}
-	
-//	private IAnchorNodeObjectType createAnchorShapeA() {
-//		AnchorNodeObjectType retVal = new AnchorNodeObjectType(this, ANCHOR_SHAPEA, "Anchor Shape A");
-//		retVal.setDescription("Test anchor shape A");
-//		retVal.getDefaultAttributes().setFillColour(new Colour(RGB.WHITE, Colour.TRANSPARENT));
-//		retVal.getDefaultAttributes().setLineColour(Colour.BLACK);
-//		retVal.getDefaultAttributes().setFontColour(Colour.BLACK);
-//		retVal.getDefaultAttributes().setLineStyle(LineStyle.SOLID);
-//		retVal.getDefaultAttributes().setLineWidth(1.0);
-//		retVal.getDefaultAttributes().setSize(new Dimension(30.0, 30.0));
-//		retVal.getDefaultAttributes().setShapeDefinition(
-//				"(C) setanchor\n"
-//						+ "curbounds /h exch def /w exch def /y exch def /x exch def\n"
-//						+ "x y w h oval"
-//				);
-//		return retVal;
-//	}
-//
-//	private void defineParenting() {
-//		this.rootObjectType.getParentingRules().addChild(this.getShapeObjectType(SHAPEA));
-//		this.rootObjectType.getParentingRules().addChild(this.getShapeObjectType(SHAPEB));
-//		((ShapeObjectType)this.getShapeObjectType(SHAPEB)).getParentingRules().addChild(this.getShapeObjectType(SHAPEA));
-//		ILinkObjectType linkObjectType = this.getLinkObjectType(LINKA);
-////		IShapeObjectType linkEndShapeOt = this.getLinkEndObjectType(linkObjectType);
-//		((LinkParentingRules)linkObjectType.getParentingRules()).addChild(this.anchorNodeOts.get(ANCHOR_SHAPEA));
-//	}
-//
-//	private void defineConnections(){
-//		LinkObjectType linkOt = (LinkObjectType)this.getLinkObjectType(LINKA);
-//		IShapeObjectType shapeAOt = this.getShapeObjectType(SHAPEA);
-//		IAnchorNodeObjectType linkEndShapeOt = this.getAnchorNodeObjectType(ANCHOR_SHAPEA);
-//		linkOt.getLinkConnectionRules().addConnection(shapeAOt, shapeAOt);
-//		linkOt.getLinkConnectionRules().addConnection(shapeAOt, linkEndShapeOt);
-//	}
-	
-//	private RootObjectType createRootObject() {
-//		RootObjectType retVal = new RootObjectType(ROOT_OT, this);
-//		return retVal;
-//	}
 
+	protected final IPropertyDefinition  defineVisProp(IPropertyDefinition propDefn, int labelObjectTypeId){
+		ILabelObjectType labelOt =  getLabelObjectType(labelObjectTypeId);
+		this.visualiableProperties.put(propDefn, labelOt);
+		return propDefn;
+	}
+	
 	private static <T extends IObjectType>  void assignObjectType(SortedMap<Integer, T> otMap, T objectType){
 		otMap.put(objectType.getUniqueId(), objectType);
 	}
@@ -142,7 +108,9 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 
 	@Override
 	public Iterator<IObjectType> objectTypeIterator() {
-		List<IObjectType> retVal = new LinkedList<IObjectType>(this.shapeOts.values());
+		List<IObjectType> retVal = new LinkedList<IObjectType>();
+		retVal.add(rootObjectType);
+		retVal.addAll(this.shapeOts.values());
 		retVal.addAll(this.linkOts.values());
 		retVal.addAll(this.anchorNodeOts.values());
 		retVal.addAll(this.labelOts.values());
@@ -177,15 +145,8 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 	@Override
 	public boolean containsObjectType(int uniqueId) {
 		boolean retVal = uniqueId == this.rootObjectType.getUniqueId() || this.shapeOts.containsKey(uniqueId)
-				|| this.anchorNodeOts.containsKey(uniqueId) || this.linkOts.containsKey(uniqueId);
-		if(!retVal){
-			for(ILabelObjectType labOt : this.labelOts.values()){
-				if(labOt.getUniqueId() == uniqueId){
-					retVal = true;
-					break;
-				}
-			}
-		}
+				|| this.anchorNodeOts.containsKey(uniqueId) || this.linkOts.containsKey(uniqueId)
+				|| this.labelOts.containsKey(uniqueId);
 		return retVal;
 	}
 
@@ -198,6 +159,9 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 		else if(this.shapeOts.containsKey(uniqueId)){
 			retVal = this.shapeOts.get(uniqueId);
 		}
+		else if(this.labelOts.containsKey(uniqueId)){
+			retVal = this.labelOts.get(uniqueId);
+		}
 		else if(this.anchorNodeOts.containsKey(uniqueId)){
 			retVal = this.anchorNodeOts.get(uniqueId);
 		}
@@ -209,29 +173,31 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 
 	@Override
 	public ILabelObjectType getLabelObjectType(int uniqueId) {
-		ILabelObjectType retVal = null;
-		for(ILabelObjectType labelObjectType : this.labelOts.values()){
-			if(labelObjectType.getUniqueId() == uniqueId){
-				retVal = labelObjectType;
-				break;
-			}
+		return this.labelOts.get(uniqueId);
+	}
+
+	@Override
+	public ILabelObjectType getLabelObjectTypeByProperty(IPropertyDefinition propDefn) {
+		return this.visualiableProperties.get(propDefn);
+	}
+
+	@Override
+	public boolean isVisualisableProperty(IPropertyDefinition propDefn) {
+		boolean retVal = false;
+		if(propDefn != null){
+			retVal = this.visualiableProperties.containsKey(propDefn); 
 		}
 		return retVal;
 	}
 
 	@Override
-	public ILabelObjectType getLabelObjectTypeByProperty(IPropertyDefinition propDefn) {
-		return this.labelOts.get(propDefn);
-	}
-
-	@Override
-	public boolean isVisualisableProperty(IPropertyDefinition propDefn) {
-		return this.labelOts.containsKey(propDefn);
-	}
-
-	@Override
 	public int numShapeObjectTypes() {
 		return this.shapeOts.size();
+	}
+	
+	@Override
+	public int numLabelObjectTypes(){
+		return this.labelOts.size();
 	}
 
 	@Override
@@ -241,159 +207,29 @@ public abstract class CommonSyntaxService implements INotationSyntaxService {
 
 	@Override
 	public int numObjectTypes() {
-		return this.shapeOts.size();
+		return this.shapeOts.size() + this.labelOts.size() + this.anchorNodeOts.size() + this.linkOts.size() + 1;
 	}
 
-	private <T extends IObjectType> T findObjectTypeByName(
-			Collection<? extends T> otSet, String name) {
-		T retVal = null;
-		for (T val : otSet) {
-			if (val.getName().equals(name)) {
-				retVal = val;
-				break;
-			}
-		}
-		return retVal;
-	}
+//	private <T extends IObjectType> T findObjectTypeByName(
+//			Collection<? extends T> otSet, String name) {
+//		T retVal = null;
+//		for (T val : otSet) {
+//			if (val.getName().equals(name)) {
+//				retVal = val;
+//				break;
+//			}
+//		}
+//		return retVal;
+//	}
 
-	@Override
-	public IShapeObjectType findShapeObjectTypeByName(String name) {
-		return findObjectTypeByName(this.shapeOts.values(), name);
-	}
-
-	@Override
-	public ILinkObjectType findLinkObjectTypeByName(String name) {
-		return findObjectTypeByName(this.linkOts.values(), name);
-	}
-
-	@SuppressWarnings("unchecked")
-	protected <T extends IObjectType> T getOT(int uniqueId){
-		return (T)getObjectType(uniqueId);
-	}
-	
 //	@Override
-//	public IShapeObjectType getLinkEndObjectType(ILinkObjectType linkOt) {
-//		return this.linkEndObjectTypes.get(linkOt);
+//	public IShapeObjectType findShapeObjectTypeByName(String name) {
+//		return findObjectTypeByName(this.shapeOts.values(), name);
 //	}
-
-	
-//	private ShapeObjectType createShapeA(){
-//		ShapeObjectType retVal = new ShapeObjectType(this, SHAPEA, "Shape A");
-//		retVal.setDescription("Test shape A");
-//		retVal.setEditableAttributes(EnumSet.allOf(IShapeObjectType.EditableShapeAttributes.class));
-//		retVal.getDefaultAttributes().setFillColour(Colour.WHITE);
-//		retVal.getDefaultAttributes().setLineColour(Colour.BLACK);
-//		retVal.getDefaultAttributes().setFontColour(Colour.BLACK);
-//		retVal.getDefaultAttributes().setLineStyle(LineStyle.SOLID);
-//		retVal.getDefaultAttributes().setLineWidth(1.0);
-//		retVal.getDefaultAttributes().setSize(new Dimension(40.0, 40.0));
-//		retVal.getDefaultAttributes().setShapeDefinition(
-//				"(C) setanchor\n"
-//						+ "curbounds /h exch def /w exch def /y exch def /x exch def\n"
-//						+ "x y w h oval"
-//				);
-//		PlainTextPropertyDefinition name = new PlainTextPropertyDefinition("name", "Name");
-//		name.setDisplayName("Name");
-//		name.setEditable(true);
-//		retVal.getDefaultAttributes().addPropertyDefinition(name);
-//		this.labelOts.put(name, createNameLabel());
-//		return retVal;
-//	}
-//	
-//	private LabelObjectType createNameLabel(){
-//		LabelObjectType retVal = new LabelObjectType(this, LABELA_OT, "Label A");
-//		retVal.setDescription("Test Label");
-//		retVal.getDefaultAttributes().setLineColour(new Colour(Colour.BLACK.getRgb(), Colour.TRANSPARENT));
-//		retVal.getDefaultAttributes().setLineStyle(LineStyle.SOLID);
-//		retVal.getDefaultAttributes().setLineWidth(1.0);
-//		retVal.getDefaultAttributes().setFillColour(Colour.WHITE);
-//		retVal.getDefaultAttributes().setMinimumSize(new Dimension(25, 20));
-//		retVal.setAlwaysDisplayed(true);
-//		
-//		return retVal;
-//	}
-//	
-//	private LabelObjectType createNumberLabel(){
-//		LabelObjectType retVal = new LabelObjectType(this, LABELB_OT, "Label B");
-//		retVal.setDescription("Test Label");
-//		retVal.getDefaultAttributes().setLineColour(new Colour(Colour.BLACK.getRgb(), Colour.TRANSPARENT));
-//		retVal.getDefaultAttributes().setLineStyle(LineStyle.SOLID);
-//		retVal.getDefaultAttributes().setLineWidth(1.0);
-//		retVal.getDefaultAttributes().setFillColour(Colour.WHITE);
-//		retVal.getDefaultAttributes().setMinimumSize(new Dimension(25, 20));
-//		retVal.setAlwaysDisplayed(false);
-//		
-//		return retVal;
-//	}
-//	
-//	private ShapeObjectType createShapeB(){
-//		ShapeObjectType retVal = new ShapeObjectType(this, SHAPEB, "Shape B");
-//		retVal.setDescription("Test shape B");
-//		retVal.setEditableAttributes(EnumSet.allOf(IShapeObjectType.EditableShapeAttributes.class));
-//		retVal.getDefaultAttributes().setFillColour(Colour.WHITE);
-//		retVal.getDefaultAttributes().setLineColour(Colour.BLACK);
-//		retVal.getDefaultAttributes().setFontColour(Colour.BLACK);
-//		retVal.getDefaultAttributes().setLineStyle(LineStyle.SOLID);
-//		retVal.getDefaultAttributes().setLineWidth(1.0);
-//		retVal.getDefaultAttributes().setSize(new Dimension(100.0, 80.0));
-//		retVal.getDefaultAttributes().setShapeDefinition(
-//				"(C) setanchor\n"
-//						+ "curbounds /h exch def /w exch def /y exch def /x exch def\n"
-//						+ "x y w h rect"
-//				);
-//		PlainTextPropertyDefinition name = new PlainTextPropertyDefinition("name", "Name");
-//		name.setDisplayName("Name");
-//		name.setEditable(true);
-//		retVal.getDefaultAttributes().addPropertyDefinition(name);
-//		NumberPropertyDefinition numProp = new NumberPropertyDefinition("Number", new BigDecimal(2.5), true, true);
-//		name.setDisplayName("Num Prop");
-//		name.setEditable(true);
-//		retVal.getDefaultAttributes().addPropertyDefinition(numProp);
-//		this.labelOts.put(name, createNameLabel());
-//		this.labelOts.put(numProp, createNumberLabel());
-//		return retVal;
-//	}
-	
-//	private IShapeObjectType createLinkEndOt() {
-//		ShapeObjectType retVal = new ShapeObjectType(this, LINKA_END_OT, "LinkA End Ot");
-//		retVal.getDefaultAttributes().setShapeDefinition(
-//				"(C) setanchor\n"
-//				+ "curbounds /h exch def /w exch def /y exch def /x exch def\n"
-//				+ "x y w h rect"
 //
-//				);
-//		retVal.getDefaultAttributes().setFillColour(new Colour(Colour.BLACK.getRgb(), Colour.TRANSPARENT));
-//		retVal.getDefaultAttributes().setLineColour(new Colour(Colour.BLACK.getRgb(), Colour.TRANSPARENT));
-//		retVal.getDefaultAttributes().setSize(new Dimension(5, 5));
-//
-//		return retVal;
-//	}
-
-//	private LinkObjectType createLinkA(){
-//		LinkObjectType retVal = new LinkObjectType(this, LINKA, "Link A");
-//		retVal.setDescription("Test link A");
-//		retVal.setEditableAttributes(EnumSet.allOf(ILinkObjectType.LinkEditableAttributes.class));
-//		retVal.getDefaultAttributes().setLineColour(Colour.BLACK);
-//		retVal.getDefaultAttributes().setLineStyle(LineStyle.SOLID);
-//		retVal.getDefaultAttributes().setLineWidth(1.0);
-//		retVal.setEditableAttributes(EnumSet.allOf(LinkEditableAttributes.class));
-//		PlainTextPropertyDefinition name = new PlainTextPropertyDefinition("linkProp", "linkProp");
-//		name.setDisplayName("LinkProp");
-//		name.setEditable(true);
-//
-//		retVal.getSourceTerminusDefinition().setEditableAttributes(EnumSet.allOf(LinkTermEditableAttributes.class));
-//		retVal.getSourceTerminusDefinition().getDefaultAttributes().setEndSize(new Dimension(10,10));
-//		retVal.getSourceTerminusDefinition().getDefaultAttributes().setGap(3);
-//		retVal.getSourceTerminusDefinition().getDefaultAttributes().setEndDecoratorType(LinkEndDecoratorShape.ARROW);
-//		
-//		retVal.getTargetTerminusDefinition().setEditableAttributes(EnumSet.allOf(LinkTermEditableAttributes.class));
-//		retVal.getTargetTerminusDefinition().getDefaultAttributes().setEndSize(new Dimension(10,10));
-//		retVal.getTargetTerminusDefinition().getDefaultAttributes().setGap(3);
-//		retVal.getTargetTerminusDefinition().getDefaultAttributes().setEndDecoratorType(LinkEndDecoratorShape.ARROW);
-//		
-////		this.linkEndObjectTypes.put(retVal, createLinkEndOt());
-//		
-//		return retVal;
+//	@Override
+//	public ILinkObjectType findLinkObjectTypeByName(String name) {
+//		return findObjectTypeByName(this.linkOts.values(), name);
 //	}
 
 	@Override

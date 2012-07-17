@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
 }
 
 notation_spec
-	:	n=notation_id p+=properties* root s+=shape+ a+=anchor_node* l+=links* h+=parenting_defn*
-	-> syntaxServiceClass(notation_id={$n.st}, prop_defns={$p}, shapes={$s}, links={$l}, anchor_nodes={$a}, parenting={$h})
+	:	n=notation_id r=root labs+=label* p+=properties* s+=shape+ a+=anchor_node* l+=links* h+=parenting_defn*
+	-> syntaxServiceClass(notation_id={$n.st}, root={$r.st}, prop_defns={$p}, labels={$labs}, shapes={$s}, links={$l}, anchor_nodes={$a}, parenting={$h})
 	;
 	
 notation_id returns[String major, String minor, String patch, String shortName, String packageName]
@@ -52,28 +52,45 @@ notation_id returns[String major, String minor, String patch, String shortName, 
 	;
 	
 properties
-	:	^(PROPERTY ID (^(NAME t=TEXT)) (^(DESCR d=TEXT)) ^(TYPE TEXT_PROP) v=VISUALISABLE?)
-	-> define_text_prop(id={$ID.text}, name={$t.text}, descr={$d.text}, visualisable={$v.text})
-	|	^(PROPERTY ID (^(NAME t=TEXT)) (^(DESCR d=TEXT)) ^(TYPE REAL_PROP) v=VISUALISABLE?)
-	-> define_real_prop(id={$ID.text}, name={$t.text}, descr={$d.text}, visualisable={$v.text})
-	|	^(PROPERTY ID (^(NAME t=TEXT)) (^(DESCR d=TEXT)) ^(TYPE INT_PROP) v=VISUALISABLE?)
-	-> define_int_prop(id={$ID.text}, name={$t.text}, descr={$d.text}, visualisable={$v.text})
-	|	^(PROPERTY ID (^(NAME t=TEXT)) (^(DESCR d=TEXT)) ^(TYPE BOOL_PROP) v=VISUALISABLE?)
-	-> define_bool_prop(id={$ID.text}, name={$t.text}, descr={$d.text}, visualisable={$v.text})
+	:	^(PROPERTY id=ID (^(LABEL l=ID))? (^(NAME t=TEXT)) (^(DESCR d=TEXT)) ^(TYPE TEXT_PROP) iv=prop_init_val ) 
+	-> define_text_prop(id={$id.text}, label_id={$l.text}, name={$t.text}, descr={$d.text}, value={$iv.st})
+	|	^(PROPERTY id=ID (^(LABEL l=ID))? (^(NAME t=TEXT)) (^(DESCR d=TEXT)) ^(TYPE REAL_PROP) iv=prop_init_val )
+	-> define_real_prop(id={$id.text}, label_id={$l.text}, name={$t.text}, descr={$d.text}, value={$iv.st})
+	|	^(PROPERTY id=ID (^(LABEL l=ID))? (^(NAME t=TEXT)) (^(DESCR d=TEXT)) ^(TYPE INT_PROP) iv=prop_init_val )
+	-> define_int_prop(id={$id.text}, label_id={$l.text}, name={$t.text}, descr={$d.text}, value={$iv.st})
+	|	^(PROPERTY id=ID (^(LABEL l=ID))? (^(NAME t=TEXT)) (^(DESCR d=TEXT)) ^(TYPE BOOL_PROP) iv=prop_init_val )
+	-> define_bool_prop(id={$id.text}, label_id={$l.text}, name={$t.text}, descr={$d.text}, value={$iv.st})
+	;
+
+prop_init_val
+	:	^('=' (number -> {$number.st} |bool_val -> {$bool_val.st}|string_literal -> {$string_literal.st}) )
 	;
 
 root	:	^(ROOT ID)
+	-> root(id={$ID.text})
 	;
 
-shape	:	^(SHAPE ID ^(NAME t=TEXT) (^(DESCR d=TEXT))? nd=node_defn fd=font_defn ld=line_defn pr+=prop_ref*)
-	->	shape(id={$ID.text}, name={$t.text}, descr={$d.text}, node_defn={$nd.st}, line_defn={$ld.st}, font_defn={$fd.st}, prop_refs={$pr})
+label	:	^(LABEL ID ^(NAME t=TEXT) (^(DESCR d=TEXT))? f=format? nd=node_defn fd=font_defn ld=line_defn)
+	->	label(id={$ID.text}, format={$f.st}, name={$t.text}, descr={$d.text}, node_defn={$nd.st}, line_defn={$ld.st}, font_defn={$fd.st})
+	;
+
+format	:	^(FORMAT t=TEXT)
+	->  format(text={$t.text})
+	;
+
+shape	:	^(SHAPE ID ^(NAME t=TEXT) (^(DESCR d=TEXT))? nd=node_defn fd=font_defn ld=line_defn pd=prop_defn?)
+	->	shape(id={$ID.text}, name={$t.text}, descr={$d.text}, node_defn={$nd.st}, line_defn={$ld.st}, font_defn={$fd.st}, prop_defn={$pd.st})
 	;
 	
-prop_ref:	^(ID (v=number -> prop_ref(id={$ID.text}, val={$v.st})|b=bool_val -> prop_ref(id={$ID.text}, val={$b.st})|l=string_literal -> prop_ref(id={$ID.text}, val={$l.st})) )
-	;
-	
+prop_defn
+	:	^(PROPERTY pr+=ID+)
+	->	prop_defn(prop_refs={$pr})
+	;	
+
 node_defn
-	:	^(NODE nfd=node_figure_defn sz=node_size c=colour)
+@init {CommonTree t = (CommonTree)input.LT(1);}
+    	:  ^(NODE nfd=node_figure_defn sz=node_size c=colour)
+    	-> {t.hasAncestor(LABEL)}? label_node_defn(fig_defn={$nfd.textVal}, node_size={$sz.st}, colour={$c.st})
 	-> node_defn(fig_defn={$nfd.textVal}, node_size={$sz.st}, colour={$c.st})
 	;
 	
@@ -89,27 +106,27 @@ node_figure_defn returns[String textVal]
 	
 node_size
 	:	^(SIZE_KWD w=number h=number)
-		-> node_size(w={$w.st}, h={$h.st})
+	-> node_size(w={$w.st}, h={$h.st})
 	;
 
 font_defn
 	:	^(FONT c=colour fs=font_style fp=font_pitch)
-		-> font_defn(colour={$c.st}, style={$fs.st}, pitch={$fp.st})
+	-> font_defn(colour={$c.st}, style={$fs.st}, pitch={$fp.st})
 	;
 
 font_style
 	:	^(STYLE ID)
-		-> font_style(id={$ID.text})
+	-> font_style(style={$ID.text})
 	;
 
 font_pitch
 	:	^(PITCH n=number)
-		-> font_pitch(id={$n.st})
+	-> font_pitch(pitch={$n.st})
 	;
 
 line_defn
 	:	^(LINE ls=line_style lw=line_width c=colour)
-		-> line_defn(style={$ls.st}, width={$lw.st}, colour={$c.st})
+	-> line_defn(style={$ls.st}, width={$lw.st}, colour={$c.st})
 	;
 
 anchor_node
@@ -117,8 +134,8 @@ anchor_node
 	->	anchor_node(id={$ID.text}, name={$t.text}, descr={$d.text}, node_defn={$nd.st}, font_defn={$fd.st}, line_defn={$ld.st})
 	;
 	
-links	:	^(LINK ID (^(NAME t=TEXT)) (^(DESCR d=TEXT))? ld=line_defn fd=font_defn p+=port+ e+=valid_ends+ pr+=prop_ref*)
-	->	link(id={$ID.text}, name={$t.text}, descr={$d.text}, line_defn={$ld.st}, font_defn={$fd.st}, ports={$p}, prop_refs={$pr}, connections={$e})
+links	:	^(LINK ID (^(NAME t=TEXT)) (^(DESCR d=TEXT))? ld=line_defn p+=port+ pd=prop_defn? e+=valid_ends+ )
+	->	link(id={$ID.text}, name={$t.text}, descr={$d.text}, line_defn={$ld.st}, ports={$p}, prop_defn={$pd.st}, connections={$e})
 	;
 	
 port	:	^(s=SRC_TERM a=ID o=offset n=node_size)
@@ -157,9 +174,9 @@ colour	:	^(COLOUR HEXNUMBER)
 
 number
 	:	DOUBLE
-		-> number(val={$DOUBLE.text})
+	-> number(val={$DOUBLE.text})
 	|	INT
-		-> number(val={$INT.text})
+	-> number(val={$INT.text})
 	;
 
 bool_val:	TRUE

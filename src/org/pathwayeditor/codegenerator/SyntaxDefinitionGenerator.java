@@ -2,13 +2,10 @@ package org.pathwayeditor.codegenerator;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Arrays;
@@ -23,8 +20,6 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
-import org.antlr.runtime.tree.DOTTreeGenerator;
-import org.antlr.runtime.tree.Tree;
 import org.antlr.stringtemplate.AutoIndentWriter;
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
@@ -132,7 +127,7 @@ public class SyntaxDefinitionGenerator {
 		tokens = new CommonTokenStream(lexer);
 		parser = new NotationGenParser(tokens);
 		NotationGenParser.notation_spec_return r = parser.notation_spec();
-		dumpTree(r.getTree(), new File("treeGrammar.dot"));
+//		dumpTree(r.getTree(), new File("treeGrammar.dot"));
 		inStream.close();
 		CommonTree t = (CommonTree) r.getTree();
 		nodes = new CommonTreeNodeStream(t);
@@ -151,18 +146,18 @@ public class SyntaxDefinitionGenerator {
 		
 		this.qualifiedName = walker.getQualifiedName();
 		StringTemplate stj = (StringTemplate)walkerRet.getTemplate();
-		System.out.println(stj.toString());
+//		System.out.println(stj.toString());
 		String prefix = target.toString();
 		sendOut(prefix, stj);
 	}
 
-    private static void dumpTree(Object ast, File oFile) throws FileNotFoundException{
-		DOTTreeGenerator dtg = new DOTTreeGenerator();
-		StringTemplate st = dtg.toDOT((Tree)ast);
-		PrintStream os = new PrintStream(new FileOutputStream(oFile)); 
-		os.println(st);
-		os.close();
-    }
+//    private static void dumpTree(Object ast, File oFile) throws FileNotFoundException{
+//		DOTTreeGenerator dtg = new DOTTreeGenerator();
+//		StringTemplate st = dtg.toDOT((Tree)ast);
+//		PrintStream os = new PrintStream(new FileOutputStream(oFile)); 
+//		os.println(st);
+//		os.close();
+//    }
 
 	private void sendOut(String prefix, StringTemplate stj) throws IOException {
 		StringBuilder buf = new StringBuilder(prefix);

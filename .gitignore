@@ -1,4 +1,5 @@
 bin
+.DS_Store
 src/org/pathwayeditor/codegenerator/gen/
 antBuild
 treeGrammar.dot

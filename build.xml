@@ -13,7 +13,8 @@
 	<property name="core.src" location="src" />
 	<property name="core.test" location="test" />
 	<property name="parser.output" location="${core.src}/org/pathwayeditor/codegenerator/gen" />
-	<property name="dist" location="${build.root}/dist" />
+	<property name="runtime-src" location="${core.src}/org/pathwayeditor/codegenerator/runtime" />
+	<property name="dist" location="dist" />
 	<property name="dist.jar" location="${dist}/jar" />
 	<property name="docbase.dir" location="${build.root}/docs" />
 	<property name="doc" location="${docbase.dir}/api" />
@@ -44,15 +45,16 @@
 
 	<path id="test.classpath">
 		<path refid="buildclasspath" />
-		<pathelement location="${lib.dir}/easymock2.4/easymock.jar" />
+		<pathelement location="${build.bin}"/>
 		<pathelement location="${lib.dir}/junit4.10/junit-4.10.jar" />
-                <pathelement location="${lib.dir}/ToolKit/NotationSubsystemUtils.jar"/>
-                <pathelement location="${lib.dir}/VisualLanguageToolkit/VisualLanguageToolkit.jar"/>
+        <pathelement location="${lib.dir}/ToolKit/NotationSubsystemUtils.jar"/>
+        <pathelement location="${lib.dir}/VisualLanguageToolkit/VisualLanguageToolkit.jar"/>
 	</path>
 
 	<target name="init">
 		<mkdir dir="${build.root}" />
 		<mkdir dir="${build.bin}" />
+		<mkdir dir="${build.test}" />
 	</target>
 
 	<macrodef name="antlr3">
@@ -86,6 +88,20 @@
 		<javac debug="true" srcdir="${core.src}" destdir="${build.bin}" includeantruntime="false" listfiles="yes" deprecation="yes" verbose="false"
 			excludes="org/pathwayeditor/codegenerator/runtime/*,org/pathwayeditor/codegenerator/gen/*SyntaxService.java,org/pathwayeditor/codegenerator/output/**" >
 			<classpath refid="buildclasspath" />
+		</javac>
+		<copy todir="${build.bin}">
+			<fileset dir="${core.src}">
+				<exclude name="**/*.java" />
+				<exclude name="**/*.class" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="compile-runtime" depends="compile" description="compile runtime code">
+		<!-- Compile the java code from ${src} into ${classes} -->
+		<javac debug="true" srcdir="${core.src}" destdir="${build.bin}" includeantruntime="false" listfiles="yes" deprecation="yes" verbose="false"
+			includes="org/pathwayeditor/codegenerator/runtime/**" >
+			<classpath refid="test.classpath" />
 		</javac>
 		<copy todir="${build.bin}">
 			<fileset dir="${core.src}">
@@ -134,17 +150,10 @@
 		</jar>
 	</target>
 
-	<target name="test-class" depends="dist" description="creates the test class for unit testing">
-		<java jar="${jar.name}" fork="true" maxmemory="256m">
-			<arg value="-t" />
-			<arg value="${test.package.dir}" />
-			<arg file="${test.defn.file}" />
-		</java>
-	</target>
-
-	<target name="compile-test" depends="compile,test-class" description="compile">
+	<target name="compile-test" depends="compile-runtime, run_parser" description="compile tests">
 		<!-- Compile the java code from ${src} into ${build.bin} -->
-		<javac debug="true" srcdir="${core.test}" destdir="${build.test}" listfiles="yes" deprecation="yes" includeantruntime="false">
+		<javac debug="true" srcdir="${core.test}" destdir="${build.test}" listfiles="yes" deprecation="yes"
+			includeantruntime="false" verbose="false">
 			<classpath refid="test.classpath" />
 		</javac>
 		<copy todir="${build.test}">
@@ -153,29 +162,29 @@
 	</target>
 
 	<target name="test" depends="compile-test">
-		<delete dir="${dist}/test/logs" />
-		<mkdir dir="${dist}/test/logs" />
+		<delete dir="${build.test}/logs" />
+		<mkdir dir="${build.test}/logs" />
 		<junit printsummary="yes" haltonfailure="no" fork="yes" forkmode="perBatch">
 			<classpath>
 				<path refid="test.classpath" />
-				<pathelement location="${classes}" />
+				<pathelement location="${build.test}" />
 			</classpath>
-			<batchtest todir="${dist}/test/logs">
+			<batchtest todir="${build.test}/logs">
 				<formatter type="xml" />
-				<fileset dir="${classes}">
+				<fileset dir="${build.test}">
 					<include name="**/*Test.class" />
 				</fileset>
 			</batchtest>
 		</junit>
 
 		<!-- clean report directory -->
-		<delete dir="${dist}/test/junitReports" />
-		<mkdir dir="${dist}/test/junitReports" />
+		<delete dir="${build.test}/junitReports" />
+		<mkdir dir="${build.test}/junitReports" />
 
 		<!-- generate report -->
-		<junitreport todir="${dist}/test/junitReports">
-			<fileset dir="${dist}/test/logs" includes="**/*.xml" />
-			<report todir="${dist}/test/junitReports" />
+		<junitreport todir="${build.test}/junitReports">
+			<fileset dir="${build.test}/logs" includes="**/*.xml" />
+			<report todir="${build.test}/junitReports" />
 		</junitreport>
 	</target>
 

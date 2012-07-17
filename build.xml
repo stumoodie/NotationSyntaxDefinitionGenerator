@@ -10,16 +10,16 @@
 	<property name="build.root" location="antBuild" />
 	<property name="build.bin" location="${build.root}/bin" />
 	<property name="build.test" location="${build.root}/test" />
+	<property name="build.doc" location="${build.root}/doc" />
 	<property name="core.src" location="src" />
 	<property name="core.test" location="test" />
 	<property name="parser.output" location="${core.src}/org/pathwayeditor/codegenerator/gen" />
 	<property name="runtime-src" location="${core.src}/org/pathwayeditor/codegenerator/runtime" />
-	<property name="dist" location="dist" />
-	<property name="dist.jar" location="${dist}/jar" />
-	<property name="docbase.dir" location="${build.root}/docs" />
-	<property name="doc" location="${docbase.dir}/api" />
 	<property name="lib.dir" location="libs" />
-	<property name="jar.name" location="${dist.jar}/${ant.project.name}.jar" />
+	<property name="jar.dir" value="jars"/>
+	<property name="jar.name.bin" value="${ant.project.name}.jar" />
+	<property name="jar.name.src" value="${ant.project.name}-src.jar" />
+	<property name="jar.name.doc" value="${ant.project.name}-docs.jar" />
 	<property name="grammar.path" location="${core.src}/org/pathwayeditor/codegenerator" />
 	<property name="grammar.file" value="${grammar.path}/NotationGen.g" />
 	<property name="walker.file" value="${grammar.path}/NotationGenTree.g" />
@@ -39,8 +39,8 @@
 	<property name="antlr" value="${lib.dir}/antlr/lib" />
 
 	<path id="buildclasspath">
-		<pathelement location="${lib.dir}/antlr-3.4/lib/antlr-3.4-complete.jar" />
-		<pathelement location="${lib.dir}/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" />
+			<pathelement location="${lib.dir}/antlr-3.4/lib/antlr-3.4-complete.jar" />
+			<pathelement location="${lib.dir}/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" />
 	</path>
 
 	<path id="test.classpath">
@@ -78,7 +78,7 @@
 		<antlr3 target="${grammar.file}" output="${parser.output}" />
 	</target>
 
-	<target name="walker" depends="grammar-init">
+	<target name="walker" depends="grammar-init,grammar">
 		<antlr3 target="${walker.file}" output="${parser.output}" debug="false"/>
 	</target>
 
@@ -136,20 +136,6 @@
 		</exec>
 	</target>
 
-	<target name="dist" depends="compile,init" description="generate for distribution">
-		<mkdir dir="${dist.jar}" />
-		<jar destfile="${jar.name}" filesetmanifest="mergewithoutmain">
-			<manifest>
-				<attribute name="Built-By" value="${user.name}" />
-				<attribute name="Main-Class" value="${main.class}" />
-				<attribute name="Class-Path" value=".:org/pathwayeditor/codegenerator" />
-			</manifest>
-			<fileset dir="${build.bin}" />
-			<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/antlr-3.4/lib/antlr-3.4-complete.jar" />
-			<zipfileset excludes="META-INF/*.SF" src="${lib.dir}/jopt-simple-3.0.1/jopt-simple-3.0.1.jar" />
-		</jar>
-	</target>
-
 	<target name="compile-test" depends="compile-runtime, run_parser" description="compile tests">
 		<!-- Compile the java code from ${src} into ${build.bin} -->
 		<javac debug="true" srcdir="${core.test}" destdir="${build.test}" listfiles="yes" deprecation="yes"
@@ -189,7 +175,7 @@
 	</target>
 
 	<target name="doc" description="generate documentation">
-		<javadoc destdir="${doc}" author="true" version="true" use="true" windowtitle="${ant.project.name}" sourcepath="${core.src}" linksource="yes" breakiterator="yes">
+		<javadoc destdir="${build.doc}" author="true" version="true" use="true" windowtitle="${ant.project.name}" sourcepath="${core.src}" linksource="yes" breakiterator="yes">
 		  <fileset dir="${core.src}">
 	            <include name="org/pathwayeditor/codegenerator/**/*.java"/>
 	            <exclude name="org/pathwayeditor/codegenerator/runtime/**"/>
@@ -207,6 +193,44 @@
 		<delete dir="${build.root}" />
 	</target>
 
-	<target name="all" depends="dist, doc" description="create a distribution and javadocs" />
+	<target name="all" depends="runnable-jar,all-jars" description="create a distribution and javadocs" />
+
+	<target name="all-jars" depends="jar-bin,jar-src,jar-docs,runnable-jar"/>
+	
+	<target name="init-jardirs">
+		<delete dir="${jar.dir}" />
+		<mkdir dir="${jar.dir}" />
+	</target>
+
+	<target name="jar-bin" depends="compile, init-jardirs">
+		<jar destfile="${jar.dir}/${jar.name.bin}">
+			<fileset dir="${build.bin}" />
+		</jar>
+	</target>
+	
+	<target name="jar-src" depends="init-jardirs">
+		<jar destfile="${jar.dir}/${jar.name.src}">
+			<fileset dir="${core.src}" />
+		</jar>
+	</target>
+	
+	<target name="jar-docs" depends="doc">
+		<mkdir dir="${jar.dir}" />
+		<jar destfile="${jar.dir}/${jar.name.doc}">
+			<fileset dir="${build.doc}" />
+		</jar>
+	</target>
+	
+    <target name="runnable-jar" description="A runnable jar that contains all dependencies" >
+        <jar destfile="${jar.dir}/syntaxGenerator.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="org.pathwayeditor.codegenerator.SyntaxDefinitionGenerator"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="${build.bin}"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib.dir}/antlr-3.4/lib/antlr-3.4-complete.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib.dir}/jopt-simple-3.0.1/jopt-simple-3.0.1.jar"/>
+       </jar>
+    </target>
 
 </project>
